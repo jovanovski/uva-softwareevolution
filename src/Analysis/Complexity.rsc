@@ -13,14 +13,14 @@ import Analysis::Utils;
 import Metrics::Volume;
 
 
-public Score analyseModelComplexity(M3 model, int ct = 5) {
+public Score analyseModelComplexity(M3 model, int suggs = 5) {
 	methodccs = getCcPerMethod(model);
 	score = getModelCcScore(getRelVolumePerRisk(getVolumePerRisk(getCcRiskPerMethod(getCcPerMethod(model)), countLinesInModules(model))));
 	
 	println("Complexity: <score>");
 	println();
-	println("The <ct> units with the highest complexity are:");
-	for (<m,cc> <- take(ct,sort(methodccs, bool (<ma,cca>,<mb,ccb>) { return cca > ccb; }))) {
+	println("The <suggs> units with the highest complexity are:");
+	for (<m,cc> <- take(suggs,sort(methodccs, bool (<ma,cca>,<mb,ccb>) { return cca > ccb; }))) {
 		println("<cc>: <m>");
 	};
 	println("These units could be good candidates for refactoring.");

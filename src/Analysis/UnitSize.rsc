@@ -10,15 +10,15 @@ import Set;
 import Analysis::Utils;
 import Metrics::Volume;
 
-public Score analyseModelUnitSize(M3 model, int ct = 5) {
+public Score analyseModelUnitSize(M3 model, int suggs = 5) {
 	methodvols = countLinesInModules(model);
 	score = getUnitSizeScore(getRelVolumePerRisk(getVolumePerRisk(getUnitSizeRiskPerMethod(methodvols), methodvols)));
 	
 	println("Unit size: <score>");
 	println();
 	
-	println("The <ct> largest units are:");
-	for (<m,v> <- take(ct,sort(methodvols, bool (<ma,va>,<mb,vb>) { return va > vb; }))) {
+	println("The <suggs> largest units are:");
+	for (<m,v> <- take(suggs,sort(methodvols, bool (<ma,va>,<mb,vb>) { return va > vb; }))) {
 		println("<v>: <m>");
 	};	
 	println("These units could be good candidates for refactoring.");
