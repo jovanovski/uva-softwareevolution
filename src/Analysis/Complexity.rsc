@@ -17,26 +17,17 @@ data Risk = Low()
 		  | High()
 		  | VeryHigh();
 
-// <cc,risk> 
-list[tuple[int,Risk]] riskthresholds = [
-	<50,VeryHigh()>,
-	<21,High()>,
-	<11,Moderate()>,
-	<1,Low()>
-];
-
-// <moderate risk %, high risk %, very high risk %, score>
-list[tuple[int,int,int,Score]] scorethresholds = [
-	<25,0,0,PlusPlus()>,
-	<30,5,0,Plus()>,
-	<40,10,0,O()>,
-	<50,15,5,Min()>,
-	<100,100,100,MinMin()>
-];
-
 public Score getModelCcScore(M3 model) {
-	rv = getRelVolumePerCcRisk(getVolumePerCcRisk(getCcRiskPerMethod(getCcPerMethod(model)), countLinesInModules(model)));	
-	return head([s | <m,h,vh,s> <- scorethresholds, rv[Moderate()] <= m && rv[High()] <= h && rv[VeryHigh()] <= vh]);
+	rv = getRelVolumePerCcRisk(getVolumePerCcRisk(getCcRiskPerMethod(getCcPerMethod(model)), countLinesInModules(model)));
+	vh = rv[VeryHigh()];
+	h = rv[High()];
+	m = rv[Moderate()];
+	
+	if (m <= 25 && h <= 0 && vh <= 0) return PlusPlus();
+	if (m <= 30 && h <= 5 && vh <= 0) return Plus();
+	if (m <= 40 && h <= 10 && vh <= 0) return O();
+	if (m <= 50 && h <= 15 && vh <= 5) return Min();
+	return MinMin();
 }
 
 public map[Risk,real] getModelRelVolumePerCcRisk(M3 model) {
@@ -66,5 +57,12 @@ public set[tuple[loc,Risk]] getModelCcRiskPerMethod(M3 model) {
 }
 
 public set[tuple[loc,Risk]] getCcRiskPerMethod(set[tuple[loc,int]] methodccs) {
-	return { <methodloc,head([score | <min,score> <- riskthresholds, methodcc >= min])> | <methodloc,methodcc> <- methodccs };
+	return { <methodloc,getCcRisk(methodcc)> | <methodloc,methodcc> <- methodccs };
+}
+
+public Risk getCcRisk(int cc) {
+	if (cc <= 10) return Low();
+	if (cc <= 20) return Moderate();
+	if (cc <= 50) return High();
+	return VeryHigh();
 }
