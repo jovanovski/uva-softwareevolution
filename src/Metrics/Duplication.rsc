@@ -8,7 +8,7 @@ import String;
 import List;
 import Map;
 
-import Metrics::Utils;
+import Metrics::Volume;
 
 public int duplicationInModel(M3 model){
 	//Get all classes (skip looking for duplication in imports)

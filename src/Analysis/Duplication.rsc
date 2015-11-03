@@ -4,7 +4,7 @@ import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
 import lang::java::jdt::m3::AST;
 
-import Metrics::Utils;
+import Metrics::Volume;
 import Metrics::Duplication;
 import Analysis::Utils;
 import IO;

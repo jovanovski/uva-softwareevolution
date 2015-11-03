@@ -4,8 +4,8 @@ import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
 import lang::java::jdt::m3::AST;
 
-import Metrics::Utils;
 import Analysis::Utils;
+import Metrics::Volume;
 import IO;
 
 public Score volumeMetric(M3 model){
