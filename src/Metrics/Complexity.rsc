@@ -4,8 +4,10 @@ import lang::java::jdt::m3::Core;
 import lang::java::m3::Core;
 import lang::java::m3::AST;
 import List;
+import IO;
 
 import Metrics::Utils;
+import util::Math;
 
 data Risk = Low()
 		  | Medium()
@@ -19,6 +21,21 @@ list[tuple[int,int,Risk]] thresholds = [
 	<21,50,High()>,
 	<50,-1,VeryHigh()>
 ];
+
+public map[Risk,real] ccriskrelvolume(M3 model) {
+	rv = ccriskvolume(model);
+	total = (0 | it + rv[risk] | risk <- rv);
+	return (risk: toReal(rv[risk])/total*100 | risk <- rv);
+}
+
+public map[Risk,int] ccriskvolume(M3 model) {
+	r = (Low(): 0, Medium(): 0, High(): 0, VeryHigh(): 0);
+	for (<methodloc,risk> <- methodccscores(model)) {
+		methodvolume = 1;
+		r[risk] += methodvolume;
+	};
+	return r;
+}
 
 public set[tuple[loc,Risk]] methodccscores(M3 model) {
 	return { <methodloc,head([score | <min,max,score> <- thresholds, methodcc >= min && (max < 0 || methodcc <= max)])> | <methodloc,methodcc> <- methodccs(model) };
