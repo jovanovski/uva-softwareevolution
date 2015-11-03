@@ -6,7 +6,9 @@ import lang::java::m3::AST;
 import Metrics::Utils;
 
 public set[tuple[loc,int]] methodasserts(M3 model) {
-	return { <methodloc,asserts(impl)> | <methodloc, \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl)> <- methodasts(model)};
+	return 
+		{ <methodloc,asserts(impl)> | <methodloc, \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl)> <- methodasts(model)}
+		+ { <methodloc,asserts(impl)> | <methodloc, \constructor(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl)> <- methodasts(model)};
 }
 
 int asserts(Statement s) {
@@ -14,8 +16,9 @@ int asserts(Statement s) {
 	visit (s) {
 		case \assert(Expression expression): c += 1; 
 		case \assert(Expression expression, Expression message): c += 1;
-		case \methodCall(bool isSuper, /^assert/, list[Expression] arguments): c += 1; 
-		case \methodCall(bool isSuper, Expression receiver, /^assert/, list[Expression] arguments): c += 1;
+		
+		// we only count asserts as static method calls as these are more likely to be test asserts
+		case \methodCall(bool isSuper, /^assert/, list[Expression] arguments): c += 1;
 	}
 	return c;
 }
