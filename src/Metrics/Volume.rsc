@@ -1,4 +1,4 @@
-module java1
+module Metrics::Volume
 
 import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
@@ -9,7 +9,6 @@ import List;
 import Map;
 
 public M3 myModel = createM3FromEclipseProject(|project://smallsql0.21_src|);
-
 
 public list[str] getLinesInUnit(loc unit){
 	str read = readFile(unit);
@@ -48,6 +47,18 @@ public list[str] getLinesInUnit(loc unit){
 
 public int countLinesInUnit(loc unit){
 	return size(getLinesInUnit(unit));
+}
+
+public rel[loc,int] countLinesInModules(M3 model){
+	rel[loc,int] res = {};
+	
+	list[loc] units =  [ i[0] | i <- myModel@containment, isMethod(i[0])];
+	
+	for(unit <- units){
+		res = res join {<unit, countLinesInUnit(unit)>};
+	}
+	
+	return res;
 }
 
 public int countLinesInModel(M3 model){
