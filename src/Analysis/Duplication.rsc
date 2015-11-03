@@ -9,9 +9,18 @@ import Metrics::Duplication;
 import Analysis::Utils;
 import IO;
 
-public Score duplicationMetric(M3 model){
+public Score analyseModelDuplication(M3 model) {
 	int dup = duplicationInModel(model);
-	int lines = countLinesInModel(model);
+	int ls = countLinesInModel(model);
+	score = duplicationMetric(dup, ls);
+	
+	println("Duplication: <score>");
+	println();
+	
+	return score;
+}
+
+public Score duplicationMetric(dup, lines){
 	real res = dup / (lines / 100.0);
 	
 	if(res <= 3.0) return PlusPlus();;

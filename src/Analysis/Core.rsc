@@ -22,7 +22,7 @@ public map[str,Score] computeModelScpScores(M3 model, int suggs = 5) {
 	return (
 		"Volume": analyseModelVolume(model),
 		"Complexity per unit": analyseModelComplexity(model, suggs=suggs),
-		"Duplication": duplicationMetric(model),
+		"Duplication": analyseModelDuplication(model),
 		"Unit size": analyseModelUnitSize(model, suggs=suggs),
 		"Unit testing": O()
 	);
@@ -35,7 +35,7 @@ public map[str,Score] computeMntScores(map[str,Score] scpscores) {
 //data X = x() | y(int i);
 //test bool f(X t) = y(_) := t;
 
-public void analyseModel(M3 model, int suggs = 5) {
+public Score analyseModel(M3 model, int suggs = 5) {
 	println("Computing source code property scores.");
 	println();
 	scpscores = computeModelScpScores(model,suggs=suggs);
@@ -50,7 +50,10 @@ public void analyseModel(M3 model, int suggs = 5) {
 	for (c <- mntscores) {
 		println("<c>:<mntscores[c]>");
 	}
-	
 	println("");
-	println("Overall score: <avgscore([mntscores[s] | s <- mntscores])>");
+	
+	score = avgscore([mntscores[s] | s <- mntscores]);
+	println("Overall score: <score>");
+	
+	return score;
 }
