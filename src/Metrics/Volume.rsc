@@ -3,59 +3,29 @@ module Metrics::Volume
 import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
 import lang::java::jdt::m3::AST;
+import Metrics::Utils;
 import IO;
 import String;
 import List;
 import Map;
 
 public M3 myModel = createM3FromEclipseProject(|project://smallsql0.21_src|);
+//lines: 26629
+//duplication: 342
+//dup %: 1.284
 
-public list[str] getLinesInUnit(loc unit){
-	str read = readFile(unit);
-	
-	//Replace all tabs and returns because we don't need them in parsing
-	read = replaceAll(read, "\t", "");
-	read = replaceAll(read, "\r", "");
-	
-	//Get all block comments via regex
-	list[str] blockcomments = [ x | /<x:\/\*(.|[\n])*?\*\/>/ := read];
-	
-	//And delete them from the class
-	for(rpl <- blockcomments){
-		read = replaceAll(read, rpl, "");
-	}
-
-	//Get all one-line comments
-	list[str] olcomments = [ x | /<x:\n\/\/.*\n>/ := read];
-	//And delete them from the class
-	for(rpl <- olcomments){
-		read = replaceAll(read, rpl, "\n");
-	}
-	
-	//Remove empty lines
-	str oldread = read;
-	while(true){
-		read = replaceAll(read, "\n\n", "\n");
-		if(read == oldread) break;
-		oldread = read;
-	}
-	
-	//Return list of lines
-	return split("\n", read);
-		
-}
-
-public int countLinesInUnit(loc unit){
-	return size(getLinesInUnit(unit));
-}
+//public M3 myModel2 = createM3FromEclipseProject(|project://hsqldb-2.3.1|);
+//lines: 188547
+//duplication: 2352
+//dup %: 1.247
 
 public rel[loc,int] countLinesInModules(M3 model){
 	rel[loc,int] res = {};
 	
-	list[loc] units =  [ i[0] | i <- myModel@containment, isMethod(i[0])];
+	list[loc] units =  [ i[0] | i <- model@containment, isMethod(i[0])];
 	
 	for(unit <- units){
-		res = res join {<unit, countLinesInUnit(unit)>};
+		res = res + <unit, size(getLinesInUnit(unit))>;
 	}
 	
 	return res;
@@ -63,12 +33,12 @@ public rel[loc,int] countLinesInModules(M3 model){
 
 public int countLinesInModel(M3 model){
 	//Get all compilation units
-	list[loc] units = [ i[0] | i <- myModel@containment, isCompilationUnit(i[0])];
+	list[loc] units = [ i[0] | i <- model@containment, isCompilationUnit(i[0])];
 	
 	int res = 0;
 	
 	for(loc L <- units){
-		cnt = countLinesInUnit(L);
+		cnt = size(getLinesInUnit(L));
 		//println("<L> has <cnt> lines");
 		res += cnt;
 	}
@@ -102,5 +72,5 @@ public int duplicationInLines(list[list[str]] lines){
 			myMap[lines6] = 1;
 		}
 	}
-	return (0 | it + (i-1) | i <- range(myMap), i > 1);
+	return (0 | it + (i-1) | i <- range(myMap), i > 1)*6;
 }
