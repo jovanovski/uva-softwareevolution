@@ -12,8 +12,23 @@ import Metrics::Complexity;
 import Analysis::Utils;
 import Metrics::Volume;
 
-public Score getModelCcScore(M3 model) {
-	rv = getRelVolumePerRisk(getVolumePerRisk(getCcRiskPerMethod(getCcPerMethod(model)), countLinesInModules(model)));
+
+public Score analyseModelComplexity(M3 model) {
+	methodccs = getCcPerMethod(model);
+	score = getModelCcScore(getRelVolumePerRisk(getVolumePerRisk(getCcRiskPerMethod(getCcPerMethod(model)), countLinesInModules(model))));
+	
+	println("Complexity: <score>");
+	println();
+	println("The 5 units with the highest complexity are:");
+	for (<m,cc> <- take(5,sort(methodccs, bool (<ma,cca>,<mb,ccb>) { return cca > ccb; }))) {
+		println("<cc>: <m>");
+	};
+	println("These functions could be good candidates for refactoring");
+	println();
+	return score;
+}
+
+public Score getModelCcScore(map[Risk,real] rv) {
 	vh = rv[VeryHigh()];
 	h = rv[High()];
 	m = rv[Moderate()];
