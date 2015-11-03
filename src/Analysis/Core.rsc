@@ -7,6 +7,8 @@ import IO;
 
 import Analysis::Utils;
 import Analysis::Complexity;
+import Analysis::Duplication;
+import Analysis::Volume;
 
 map[str, list[str]] scpmntmap = (
 	"Analysability": ["Volume", "Duplication", "Unit size", "Unit testing"],
@@ -17,16 +19,16 @@ map[str, list[str]] scpmntmap = (
 
 public map[str,Score] computeModelScpScores(M3 model) {
 	return (
-		"Volume": O(),
+		"Volume": volumeMetric(model),
 		"Complexity per unit": getModelCcScore(model),
-		"Duplication": O(),
+		"Duplication": duplicationMetric(model),
 		"Unit size": O(),
 		"Unit testing": O()
 	);
 }
 
-public map[str,Score] computeModelMntScores(M3 model) {
-	
+public map[str,Score] computeMntScores(map[str,Score] scpscores) {
+	return (c: avgscore([scpscores[p] | p <- scpmntmap[c]]) | c <- scpmntmap);
 }
 
 public void analyseModel(M3 model) {
@@ -37,7 +39,8 @@ public void analyseModel(M3 model) {
 	};
 	println("");
 	println("This has resulted in the following maintainability scores:");
-	for (c <- scpmntmap) {
-		println("<c>:<avgscore([scpscores[p] | p <- scpmntmap[c]])>");
+	mntscores = computeMntScores(scpscores);
+	for (c <- mntscores) {
+		println("<c>:<mntscores[c]>");
 	}
 }

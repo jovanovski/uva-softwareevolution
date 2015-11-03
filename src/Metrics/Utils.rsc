@@ -45,3 +45,18 @@ public list[str] getLinesInUnit(loc unit){
 	return split("\n", read);
 		
 }
+
+public int countLinesInModel(M3 model){
+	//Get all compilation units
+	list[loc] units = [ i[0] | i <- model@containment, isCompilationUnit(i[0])];
+	
+	int res = 0;
+	
+	for(loc L <- units){
+		cnt = size(getLinesInUnit(L));
+		//println("<L> has <cnt> lines");
+		res += cnt;
+	}
+	
+	return res;
+}
