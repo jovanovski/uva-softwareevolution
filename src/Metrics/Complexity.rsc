@@ -3,10 +3,28 @@ module Metrics::Complexity
 import lang::java::jdt::m3::Core;
 import lang::java::m3::Core;
 import lang::java::m3::AST;
+import List;
+
 import Metrics::Utils;
 
+data Risk = Low()
+		  | Medium()
+		  | High()
+		  | VeryHigh();
 
-public set[tuple[loc,int]] methodcc(M3 model) {
+// <min,max,risk> 
+list[tuple[int,int,Risk]] thresholds = [
+	<1,11,Low()>,
+	<11,20,Medium()>,
+	<21,50,High()>,
+	<50,-1,VeryHigh()>
+];
+
+public set[tuple[loc,Risk]] methodccscores(M3 model) {
+	return { <methodloc,head([score | <min,max,score> <- thresholds, methodcc >= min && (max < 0 || methodcc <= max)])> | <methodloc,methodcc> <- methodccs(model) };
+}
+
+public set[tuple[loc,int]] methodccs(M3 model) {
 	asts = methodasts(model); 
 	return 
 		{<methodloc,cc(impl)> | <methodloc,\method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl)> <- asts} 
