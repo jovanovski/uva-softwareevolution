@@ -4,14 +4,31 @@ import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
 import lang::java::jdt::m3::AST;
 import IO;
+import List;
+import Set;
 
 import Analysis::Utils;
 import Metrics::Volume;
 
-// categorization source: http://swerl.tudelft.nl/twiki/pub/Main/TechnicalReports/TUD-SERG-2014-008.pdf
-public Score getModelUnitSizeScore(M3 model) {
+public Score analyseModelUnitSize(M3 model, int ct = 5) {
 	methodvols = countLinesInModules(model);
-	rv = getRelVolumePerRisk(getVolumePerRisk(getUnitSizeRiskPerMethod(methodvols), methodvols));
+	score = getUnitSizeScore(getRelVolumePerRisk(getVolumePerRisk(getUnitSizeRiskPerMethod(methodvols), methodvols)));
+	
+	println("Unit size: <score>");
+	println();
+	
+	println("The <ct> largest units are:");
+	for (<m,v> <- take(ct,sort(methodvols, bool (<ma,va>,<mb,vb>) { return va > vb; }))) {
+		println("<v>: <m>");
+	};	
+	println("These units could be good candidates for refactoring.");
+	println();
+	
+	return score;
+}
+
+// categorization source: http://swerl.tudelft.nl/twiki/pub/Main/TechnicalReports/TUD-SERG-2014-008.pdf
+public Score getUnitSizeScore(map[Risk,real] rv) {
 	vh = rv[VeryHigh()];
 	h = rv[High()];
 	m = rv[Moderate()];
