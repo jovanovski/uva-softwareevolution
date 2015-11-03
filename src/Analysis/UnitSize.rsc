@@ -12,9 +12,16 @@ import Metrics::Volume;
 
 public Score analyseModelUnitSize(M3 model, int suggs = 5) {
 	methodvols = countLinesInModules(model);
-	score = getUnitSizeScore(getRelVolumePerRisk(getVolumePerRisk(getUnitSizeRiskPerMethod(methodvols), methodvols)));
+	rvl = getRelVolumePerRisk(getVolumePerRisk(getUnitSizeRiskPerMethod(methodvols), methodvols));
+	score = getUnitSizeScore(rvl);
 	
 	println("Unit size: <score>");
+	println();
+	println("Risk volume (%):");
+	println("  very high: <rvl[VeryHigh()]>");
+	println("  high: <rvl[High()]>");
+	println("  moderate: <rvl[Moderate()]>");
+	println("  low: <rvl[Low()]>");
 	println();
 	
 	println("The <suggs> largest units are:");

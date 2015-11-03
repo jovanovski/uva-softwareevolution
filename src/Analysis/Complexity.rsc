@@ -15,16 +15,24 @@ import Metrics::Volume;
 
 public Score analyseModelComplexity(M3 model, int suggs = 5) {
 	methodccs = getCcPerMethod(model);
-	score = getModelCcScore(getRelVolumePerRisk(getVolumePerRisk(getCcRiskPerMethod(getCcPerMethod(model)), countLinesInModules(model))));
+	rvl = getRelVolumePerRisk(getVolumePerRisk(getCcRiskPerMethod(getCcPerMethod(model)), countLinesInModules(model)));
+	score = getModelCcScore(rvl);
 	
 	println("Complexity: <score>");
+	println();
+	println("Risk volume (%):");
+	println("  very high: <rvl[VeryHigh()]>");
+	println("  high: <rvl[High()]>");
+	println("  moderate: <rvl[Moderate()]>");
+	println("  low: <rvl[Low()]>");
 	println();
 	println("The <suggs> units with the highest complexity are:");
 	for (<m,cc> <- take(suggs,sort(methodccs, bool (<ma,cca>,<mb,ccb>) { return cca > ccb; }))) {
 		println("<cc>: <m>");
 	};
 	println("These units could be good candidates for refactoring.");
-	println();
+	println();	
+	
 	return score;
 }
 
