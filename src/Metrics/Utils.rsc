@@ -7,7 +7,7 @@ import IO;
 import String;
 import List;
 
-public set[tuple[loc,Declaration]] methodasts(M3 model) {
+public set[tuple[loc,Declaration]] getMethodAsts(M3 model) {
 	return {<methodloc,getMethodASTEclipse(methodloc, model=model)> | methodloc <- methods(model)};
 }
 

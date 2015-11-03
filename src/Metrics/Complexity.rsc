@@ -7,48 +7,15 @@ import List;
 import IO;
 
 import Metrics::Utils;
-import util::Math;
 
-data Risk = Low()
-		  | Medium()
-		  | High()
-		  | VeryHigh();
-
-// <min,max,risk> 
-list[tuple[int,int,Risk]] thresholds = [
-	<1,11,Low()>,
-	<11,20,Medium()>,
-	<21,50,High()>,
-	<50,-1,VeryHigh()>
-];
-
-public map[Risk,real] ccriskrelvolume(M3 model) {
-	rv = ccriskvolume(model);
-	total = (0 | it + rv[risk] | risk <- rv);
-	return (risk: toReal(rv[risk])/total*100 | risk <- rv);
-}
-
-public map[Risk,int] ccriskvolume(M3 model) {
-	r = (Low(): 0, Medium(): 0, High(): 0, VeryHigh(): 0);
-	for (<methodloc,risk> <- methodccscores(model)) {
-		methodvolume = 1;
-		r[risk] += methodvolume;
-	};
-	return r;
-}
-
-public set[tuple[loc,Risk]] methodccscores(M3 model) {
-	return { <methodloc,head([score | <min,max,score> <- thresholds, methodcc >= min && (max < 0 || methodcc <= max)])> | <methodloc,methodcc> <- methodccs(model) };
-}
-
-public set[tuple[loc,int]] methodccs(M3 model) {
-	asts = methodasts(model); 
+public set[tuple[loc,int]] getCcPerMethod(M3 model) {
+	asts = getMethodAsts(model); 
 	return 
-		{<methodloc,cc(impl)> | <methodloc,\method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl)> <- asts} 
-		+ {<methodloc,cc(impl)> | <methodloc,\constructor(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl)> <- asts};
+		{<methodloc,getStatementCc(impl)> | <methodloc,\method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl)> <- asts} 
+		+ {<methodloc,getStatementCc(impl)> | <methodloc,\constructor(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl)> <- asts};
 }
 
-int cc(Statement s) {
+int getStatementCc(Statement s) {
 	c = 1;
 	visit (s) {
 		// statement

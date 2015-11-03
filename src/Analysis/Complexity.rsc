@@ -6,9 +6,11 @@ import lang::java::m3::AST;
 import List;
 import util::Math;
 import IO;
+import Set;
 
 import Metrics::Complexity;
 import Analysis::Core;
+import Metrics::Volume;
 
 data Risk = Low()
 		  | Moderate()
@@ -32,26 +34,37 @@ list[tuple[int,int,int,Score]] scorethresholds = [
 	<100,100,100,MinMin()>
 ];
 
-public Score ccscore(M3 model) {
-	rv = ccriskrelvolume(model);	
+public Score getModelCcScore(M3 model) {
+	rv = getRelVolumePerCcRisk(getVolumePerCcRisk(getCcRiskPerMethod(getCcPerMethod(model)), countLinesInModules(model)));	
 	return head([s | <m,h,vh,s> <- scorethresholds, rv[Moderate()] <= m && rv[High()] <= h && rv[VeryHigh()] <= vh]);
 }
 
-public map[Risk,real] ccriskrelvolume(M3 model) {
-	rv = ccriskvolume(model);
+public map[Risk,real] getModelRelVolumePerCcRisk(M3 model) {
+	return getRelVolumePerCcRisk(getVolumePerCcRisk(getCcRiskPerMethod(getCcPerMethod(model)), countLinesInModules(model)));
+}
+
+public map[Risk,real] getRelVolumePerCcRisk(map[Risk,int] rv) {
 	total = (0 | it + rv[risk] | risk <- rv);
 	return (risk: toReal(rv[risk])/total*100 | risk <- rv);
 }
 
-public map[Risk,int] ccriskvolume(M3 model) {
+public map[Risk,int] getModelVolumePerCcRisk(M3 model) {
+	return getVolumePerCcRisk(getCcRiskPerMethod(getCcPerMethod(model)), countLinesInModules(model));
+}
+
+public map[Risk,int] getVolumePerCcRisk(set[tuple[loc,Risk]] methodrisks, set[tuple[loc,int]] methodvols) {
 	r = (Low(): 0, Moderate(): 0, High(): 0, VeryHigh(): 0);
-	for (<methodloc,risk> <- methodccrisks(model)) {
-		methodvolume = 1;
-		r[risk] += methodvolume;
+	for (<methodloc,risk> <- methodrisks) {
+		methodvol = methodvols[methodloc];
+		r[risk] += getOneFrom(methodvol);
 	};
 	return r;
 }
 
-public set[tuple[loc,Risk]] methodccrisks(M3 model) {
-	return { <methodloc,head([score | <min,score> <- riskthresholds, methodcc >= min])> | <methodloc,methodcc> <- methodccs(model) };
+public set[tuple[loc,Risk]] getModelCcRiskPerMethod(M3 model) {
+	return getCcRiskPerMethod(getCcPerMethod(model));
+}
+
+public set[tuple[loc,Risk]] getCcRiskPerMethod(set[tuple[loc,int]] methodccs) {
+	return { <methodloc,head([score | <min,score> <- riskthresholds, methodcc >= min])> | <methodloc,methodcc> <- methodccs };
 }

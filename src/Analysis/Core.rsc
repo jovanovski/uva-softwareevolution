@@ -3,7 +3,6 @@ module Analysis::Core
 import util::Math;
 import List;
 import Set;
-import IO;
 
 public data Score = PlusPlus()
 		   		  | Plus()
