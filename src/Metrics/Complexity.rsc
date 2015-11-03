@@ -25,7 +25,6 @@ int getStatementCc(Statement s) {
 		case \if(Expression condition, Statement thenBranch): c += 1;
 		case \if(Expression condition, Statement thenBranch, Statement elseBranch): c += 1;
 		case \case(Expression expression): c += 1;
-		case \defaultCase(): c += 1;
 		case \catch(Declaration exception, Statement body): c += 1;
 		case \while(Expression condition, Statement body): c += 1;
 		
