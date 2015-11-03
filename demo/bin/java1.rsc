@@ -6,10 +6,11 @@ import lang::java::jdt::m3::AST;
 import IO;
 import String;
 import List;
+import Map;
 
 
-//public M3 myModel = createM3FromEclipseProject(|project://sampleproject|);
-public M3 myModel = createM3FromEclipseProject(|project://smallsql0.21_src|);
+public M3 myModel = createM3FromEclipseProject(|project://sampleproject|);
+//public M3 myModel = createM3FromEclipseProject(|project://smallsql0.21_src|);
 
 
 public list[str] getLinesInUnit(loc unit){
@@ -69,42 +70,30 @@ public int countLinesInModel(M3 model){
 
 public int duplicationInModel(M3 model){
 	//Get all compilation units
-	list[loc] units = [ i[0] | i <- myModel@containment, isCompilationUnit(i[0])];
-	
+	//list[loc] units = [ i[0] | i <- myModel@containment, isCompilationUnit(i[0])];
+	set[loc] units = classes(model);
 	//Get all the lines of code from all units, ignoring comments and empty lines as usual
-	list[str] lines = [];
+	list[list[str]] lines = [];
 	for(loc L <- units){
-		lines = lines + getLinesInUnit(L);
+		list[str] linesOfCode = getLinesInUnit(L);
+		if(size(linesOfCode) > 5){
+			lines = lines + [[a,b,c,d,e,f] | [*_,a,b,c,d,e,f,*_] := linesOfCode];
+		}
 	}
 	
 	return duplicationInLines(lines);
 }
 
-public int duplicationInLines(list[str] lines){
+public int duplicationInLines(list[list[str]] lines){
 	int dup = 0;
-	
-	while(size(lines) > 11){
-		//Get the first 6 lines
-		list[str] theseLines = take(6, lines);
-		//Get the rest of the lines without the first 6
-		list[str] restLines = slice(lines, 6, size(lines)-6);
-		
-		str l1 = theseLines[0];
-		str l2 = theseLines[1];
-		str l3 = theseLines[2];
-		str l4 = theseLines[3];
-		str l5 = theseLines[4];
-		str l6 = theseLines[5];
-		
-		//List pattern match to find the same 6 lines in the rest of the code
-		if([*L1, l1, l2, l3, l4, l5, l6, *L2] := restLines){
-			dup += 1;
-			println("Duplication that starts at \'<theseLines[0]>\' and ends at \'<theseLines[5]>\'");
+	map[list[str], int] myMap = ();
+	for(lines6 <- lines){
+		if(lines6 in myMap){
+			myMap[lines6] = myMap[lines6] + 1;
 		}
-		
-		//Remove the first line and continue while you have more than 11 lines
-		lines = tail(lines);
+		else{
+			myMap[lines6] = 1;
+		}
 	}
-	
-	return dup;
+	return (0 | it + (i-1) | i <- range(myMap), i > 1);
 }
