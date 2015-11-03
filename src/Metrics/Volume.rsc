@@ -8,13 +8,10 @@ import String;
 import List;
 import Map;
 
-
-public M3 myModel = createM3FromEclipseProject(|project://sampleproject|);
-//public M3 myModel = createM3FromEclipseProject(|project://smallsql0.21_src|);
+public M3 myModel = createM3FromEclipseProject(|project://smallsql0.21_src|);
 
 
 public list[str] getLinesInUnit(loc unit){
-	println("doing <unit>");
 	str read = readFile(unit);
 	
 	//Replace all tabs and returns because we don't need them in parsing
@@ -69,8 +66,7 @@ public int countLinesInModel(M3 model){
 }
 
 public int duplicationInModel(M3 model){
-	//Get all compilation units
-	//list[loc] units = [ i[0] | i <- myModel@containment, isCompilationUnit(i[0])];
+	//Get all classes (skip looking for duplication in imports)
 	set[loc] units = classes(model);
 	//Get all the lines of code from all units, ignoring comments and empty lines as usual
 	list[list[str]] lines = [];
