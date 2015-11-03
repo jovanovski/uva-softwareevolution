@@ -4,13 +4,13 @@ import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
 import lang::java::jdt::m3::AST;
 import Metrics::Utils;
-import Analysis::Core;
+import Analysis::Utils;
 import IO;
 import String;
 import List;
 import Map;
 
-public M3 myModel = createM3FromEclipseProject(|project://smallsql0.21_src|);
+//public M3 myModel = createM3FromEclipseProject(|project://smallsql0.21_src|);
 //lines: 26629
 //duplication: 342
 //dup %: 1.284
@@ -45,7 +45,7 @@ public Score duplicationMetric(M3 model){
 public rel[loc,int] countLinesInModules(M3 model){
 	rel[loc,int] res = {};
 	
-	list[loc] units =  [ i[0] | i <- model@containment, isMethod(i[0])];
+	set[loc] units = methods(model); // [ i[0] | i <- model@containment, isMethod(i[0])];
 	
 	for(unit <- units){
 		res = res + <unit, size(getLinesInUnit(unit))>;

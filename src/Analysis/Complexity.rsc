@@ -9,7 +9,7 @@ import IO;
 import Set;
 
 import Metrics::Complexity;
-import Analysis::Core;
+import Analysis::Utils;
 import Metrics::Volume;
 
 data Risk = Low()

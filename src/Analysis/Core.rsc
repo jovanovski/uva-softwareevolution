@@ -1,25 +1,14 @@
 module Analysis::Core
 
-import util::Math;
-import List;
-import Set;
+import lang::java::jdt::m3::Core;
+import lang::java::m3::Core;
+import lang::java::m3::AST;
 
-public data Score = PlusPlus()
-		   		  | Plus()
-				  | O()
-				  | Min()
-				  | MinMin();
-		   
-map[Score,int] scoreVals = (
-	PlusPlus(): 2,
-	Plus(): 1,
-	O(): 0,
-	Min(): -1,
-	MinMin(): -2
-);
+import Analysis::Utils;
+import Analysis::Complexity;
 
-public Score avgscore(list[Score] scores) {
-	vs = [scoreVals[s] | s <- scores];
-	roundedavg = round(toReal(sum(vs)) / toReal(size(vs)));
-	return getOneFrom({s | s <- scoreVals, scoreVals[s] == roundedavg});
+public map[str,Score] getModelScores(M3 model) {
+	return (
+		"Complexity": getModelCcScore(model)
+	);
 }
