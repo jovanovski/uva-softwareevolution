@@ -20,7 +20,7 @@ map[str, list[str]] scpmntmap = (
 
 public map[str,Score] computeModelScpScores(M3 model, int suggs = 5) {
 	return (
-		"Volume": volumeMetric(model),
+		"Volume": analyseModelVolume(model),
 		"Complexity per unit": analyseModelComplexity(model, suggs=suggs),
 		"Duplication": duplicationMetric(model),
 		"Unit size": analyseModelUnitSize(model, suggs=suggs),
