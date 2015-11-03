@@ -19,6 +19,28 @@ public M3 myModel = createM3FromEclipseProject(|project://smallsql0.21_src|);
 //duplication: 2352
 //dup %: 1.247
 
+
+public str volumeMetric(M3 model){
+	int lines = countLinesInModel(model);
+	if(lines < 66000) return "++";
+	if(lines < 246000) return "+";
+	if(lines < 665000) return "o";
+	if(lines < 1310000) return "-";
+	return "--";
+}
+
+public str duplicationMetric(M3 model){
+	int dup = duplicationInModel(model);
+	int lines = countLinesInModel(model);
+	real res = dup / (lines / 100.0);
+	
+	if(res <= 3.0) return "++";
+	if(res <= 5.0) return "+";
+	if(res <= 10.0) return "o";
+	if(res <= 20.0) return "-";
+	return "--";
+}
+
 public rel[loc,int] countLinesInModules(M3 model){
 	rel[loc,int] res = {};
 	
