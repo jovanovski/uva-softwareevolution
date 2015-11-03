@@ -1,3 +1,6 @@
 .metadata/
 .recommenders/
 bin/
+.settings
+META-INF
+build.properties
