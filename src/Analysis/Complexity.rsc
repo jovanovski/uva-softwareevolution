@@ -12,13 +12,8 @@ import Metrics::Complexity;
 import Analysis::Utils;
 import Metrics::Volume;
 
-data Risk = Low()
-		  | Moderate()
-		  | High()
-		  | VeryHigh();
-
 public Score getModelCcScore(M3 model) {
-	rv = getRelVolumePerCcRisk(getVolumePerCcRisk(getCcRiskPerMethod(getCcPerMethod(model)), countLinesInModules(model)));
+	rv = getRelVolumePerRisk(getVolumePerRisk(getCcRiskPerMethod(getCcPerMethod(model)), countLinesInModules(model)));
 	vh = rv[VeryHigh()];
 	h = rv[High()];
 	m = rv[Moderate()];
@@ -31,25 +26,7 @@ public Score getModelCcScore(M3 model) {
 }
 
 public map[Risk,real] getModelRelVolumePerCcRisk(M3 model) {
-	return getRelVolumePerCcRisk(getVolumePerCcRisk(getCcRiskPerMethod(getCcPerMethod(model)), countLinesInModules(model)));
-}
-
-public map[Risk,real] getRelVolumePerCcRisk(map[Risk,int] rv) {
-	total = (0 | it + rv[risk] | risk <- rv);
-	return (risk: toReal(rv[risk])/total*100 | risk <- rv);
-}
-
-public map[Risk,int] getModelVolumePerCcRisk(M3 model) {
-	return getVolumePerCcRisk(getCcRiskPerMethod(getCcPerMethod(model)), countLinesInModules(model));
-}
-
-public map[Risk,int] getVolumePerCcRisk(set[tuple[loc,Risk]] methodrisks, set[tuple[loc,int]] methodvols) {
-	r = (Low(): 0, Moderate(): 0, High(): 0, VeryHigh(): 0);
-	for (<methodloc,risk> <- methodrisks) {
-		methodvol = methodvols[methodloc];
-		r[risk] += getOneFrom(methodvol);
-	};
-	return r;
+	return getRelVolumePerRisk(getVolumePerRisk(getCcRiskPerMethod(getCcPerMethod(model)), countLinesInModules(model)));
 }
 
 public set[tuple[loc,Risk]] getModelCcRiskPerMethod(M3 model) {
