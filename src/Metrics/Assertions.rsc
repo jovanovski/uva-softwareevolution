@@ -1,11 +1,22 @@
-module Metrics::Asserts
+module Metrics::Assertions
 
 import lang::java::jdt::m3::Core;
 import lang::java::m3::Core;
 import lang::java::m3::AST;
+import util::Math;
+import IO;
+
 import Metrics::Utils;
 
-public int getModelAsserts(M3 model) {
+// assertion density per kloc
+public int getModelAssertionDensity(M3 model) {
+	vol = countLinesInModel(model);
+	assts = getModelAssertions(model);
+	
+	return round(toReal(assts) / (toReal(vol) / 1000)); 	
+}
+
+public int getModelAssertions(M3 model) {
 	return (0 | it + asserts | <methodloc, asserts> <- getAssertsPerMethod(model));
 }
 
