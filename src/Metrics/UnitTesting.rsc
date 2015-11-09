@@ -9,14 +9,19 @@ import IO;
 import Metrics::Utils;
 
 public int getModelAssertions(M3 model) {
-	return (0 | it + asserts | <methodloc, asserts> <- getAssertsPerMethod(model));
+	return (0 | it + a | <n, l, a> <- getModelAssertsPerMethod(model));
 }
 
-public set[tuple[loc,int]] getAssertsPerMethod(M3 model) {
-	asts = getMethodAsts(model);
-	return 
-		{ <methodloc,getStatementAsserts(impl)> | <methodloc, \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl)> <- asts}
-		+ { <methodloc,getStatementAsserts(impl)> | <methodloc, \constructor(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl)> <- asts};
+public rel[str,loc,int] getModelAssertsPerMethod(M3 model) {
+	c = {};
+	for (floc <- files(model)) {
+		ast = createAstFromFile(floc, false);
+		visit(ast) {
+			case m:\method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl): c += <name, m@src, getStatementAsserts(impl)>;
+			case m:\constructor(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl): c += <name, m@src, getStatementAsserts(impl)>;
+		}
+	}
+	return c;
 }
 
 int getStatementAsserts(Statement s) {

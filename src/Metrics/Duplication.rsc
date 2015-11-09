@@ -9,6 +9,7 @@ import List;
 import Map;
 
 import Metrics::Volume;
+import Metrics::Utils;
 
 public int duplicationInModel(M3 model){
 	//Get all classes (skip looking for duplication in imports)
@@ -25,7 +26,7 @@ public int duplicationInModel(M3 model){
 	return duplicationInLines(lines);
 }
 
-public int duplicationInLines(list[list[str]] lines){
+public int duplicationInLines(list[list[str]] lines) {
 	int dup = 0;
 	map[list[str], int] myMap = ();
 	for(lines6 <- lines){

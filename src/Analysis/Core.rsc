@@ -23,8 +23,8 @@ public map[str,Score] computeModelScpScores(M3 model, int suggs = 5) {
 	return (
 		"Volume": analyseModelVolume(model),
 		"Complexity per unit": analyseModelComplexity(model, suggs=suggs),
-		"Duplication": analyseModelDuplication(model),
-		"Unit size": analyseModelUnitSize(model, suggs=suggs),
+		"Duplication": O(), //analyseModelDuplication(model),
+		"Unit size": O(), //analyseModelUnitSize(model, suggs=suggs),
 		"Unit testing": analyseModelUnitTesting(model)
 	);
 }
@@ -33,8 +33,10 @@ public map[str,Score] computeMntScores(map[str,Score] scpscores) {
 	return (c: avgscore([scpscores[p] | p <- scpmntmap[c]]) | c <- scpmntmap);
 }
 
-//data X = x() | y(int i);
-//test bool f(X t) = y(_) := t;
+data X = x() | y(int i);
+test bool f() {
+	return false;
+}
 
 public Score analyseModel(M3 model, int suggs = 5) {
 	println("-- Analysis --");

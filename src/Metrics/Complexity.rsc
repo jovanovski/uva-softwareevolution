@@ -8,11 +8,16 @@ import IO;
 
 import Metrics::Utils;
 
-public set[tuple[loc,int]] getCcPerMethod(M3 model) {
-	asts = getMethodAsts(model);
-	return 
-		{<methodloc,getStatementCc(impl)> | <methodloc,\method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl)> <- asts} 
-		+ {<methodloc,getStatementCc(impl)> | <methodloc,\constructor(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl)> <- asts};
+public rel[str,loc,int] getModelCcPerMethod(M3 model) {
+	c = {};
+	for (floc <- files(model)) {
+		ast = createAstFromFile(floc, false);
+		visit(ast) {
+			case m:\method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl): c += <name, m@src, getStatementCc(impl)>;
+			case m:\constructor(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl): c += <name, m@src, getStatementCc(impl)>;
+		}
+	}
+	return c;
 }
 
 int getStatementCc(Statement s) {

@@ -14,8 +14,8 @@ import Metrics::Volume;
 
 
 public Score analyseModelComplexity(M3 model, int suggs = 5) {
-	methodccs = getCcPerMethod(model);
-	rvl = getRelVolumePerRisk(getVolumePerRisk(getCcRiskPerMethod(getCcPerMethod(model)), countLinesInModules(model)));
+	methodccs = getModelCcPerMethod(model);
+	rvl = getRelVolumePerRisk(getVolumePerRisk(getCcRiskPerMethod(methodccs)));
 	score = getModelCcScore(rvl);
 	
 	println("Complexity: <score>");
@@ -27,8 +27,8 @@ public Score analyseModelComplexity(M3 model, int suggs = 5) {
 	println("  low: <rvl[Low()]>");
 	println();
 	println("The <suggs> units with the highest complexity are:");
-	for (<m,cc> <- take(suggs,sort(methodccs, bool (<ma,cca>,<mb,ccb>) { return cca > ccb; }))) {
-		println("<cc>: <m>");
+	for (<n,l,cc> <- take(suggs,sort(methodccs, bool (<na,la,cca>,<nb,lb,ccb>) { return cca > ccb; }))) {
+		println("<cc>: <n> in <l>");
 	};
 	println("These units could be good candidates for refactoring.");
 	println();	
@@ -48,16 +48,8 @@ public Score getModelCcScore(map[Risk,real] rv) {
 	return MinMin();
 }
 
-public map[Risk,real] getModelRelVolumePerCcRisk(M3 model) {
-	return getRelVolumePerRisk(getVolumePerRisk(getCcRiskPerMethod(getCcPerMethod(model)), countLinesInModules(model)));
-}
-
-public set[tuple[loc,Risk]] getModelCcRiskPerMethod(M3 model) {
-	return getCcRiskPerMethod(getCcPerMethod(model));
-}
-
-public set[tuple[loc,Risk]] getCcRiskPerMethod(set[tuple[loc,int]] methodccs) {
-	return { <methodloc,getCcRisk(methodcc)> | <methodloc,methodcc> <- methodccs };
+public rel[str,loc,Risk] getCcRiskPerMethod(rel[str,loc,int] methodccs) {
+	return { <mname,mloc,getCcRisk(mcc)> | <mname,mloc,mcc> <- methodccs };
 }
 
 public Risk getCcRisk(int cc) {

@@ -7,6 +7,8 @@ import util::Math;
 import List;
 import Set;
 
+import Metrics::Utils;
+
 public data Risk = Low()
 		  | Moderate()
 		  | High()
@@ -37,11 +39,11 @@ public map[Risk,real] getRelVolumePerRisk(map[Risk,int] rv) {
 	return (risk: toReal(rv[risk])/total*100 | risk <- rv);
 }
 
-public map[Risk,int] getVolumePerRisk(set[tuple[loc,Risk]] methodrisks, set[tuple[loc,int]] methodvols) {
+public map[Risk,int] getVolumePerRisk(rel[str,loc,Risk] methodrisks) {
 	r = (Low(): 0, Moderate(): 0, High(): 0, VeryHigh(): 0);
-	for (<methodloc,risk> <- methodrisks) {
-		methodvol = methodvols[methodloc];
-		r[risk] += getOneFrom(methodvol);
+	for (<n,l,risk> <- methodrisks) {
+		mvol = size(getLinesInUnit(l));
+		r[risk] += mvol;
 	};
 	return r;
 }
