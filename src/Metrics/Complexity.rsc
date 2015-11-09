@@ -9,7 +9,7 @@ import IO;
 import Metrics::Utils;
 
 public set[tuple[loc,int]] getCcPerMethod(M3 model) {
-	asts = getMethodAsts(model); 
+	asts = getMethodAsts(model);
 	return 
 		{<methodloc,getStatementCc(impl)> | <methodloc,\method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl)> <- asts} 
 		+ {<methodloc,getStatementCc(impl)> | <methodloc,\constructor(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl)> <- asts};
@@ -19,6 +19,7 @@ int getStatementCc(Statement s) {
 	c = 1;
 	visit (s) {
 		// statement
+		case \do(Statement body, Expression condition): c += 1;
 		case \foreach(Declaration parameter, Expression collection, Statement body): c += 1;
 		case \for(list[Expression] initializers, Expression condition, list[Expression] updaters, Statement body): c += 1;
 		case \for(list[Expression] initializers, list[Expression] updaters, Statement body): c += 1;
