@@ -26,6 +26,6 @@ public Score duplicationMetric(dup, lines){
 	if(res <= 3.0) return PlusPlus();;
 	if(res <= 5.0) return Plus();
 	if(res <= 10.0) return O();
-	if(res <= 20.0) return Minus();
-	return MinusMinus();
+	if(res <= 20.0) return Min();
+	return MinMin();
 }
