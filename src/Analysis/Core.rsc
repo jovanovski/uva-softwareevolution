@@ -23,7 +23,7 @@ public map[str,Score] computeModelScpScores(M3 model, int suggs = 5) {
 	return (
 		"Volume": analyseModelVolume(model),
 		"Complexity per unit": analyseModelComplexity(model, suggs=suggs),
-		"Duplication": O(), //analyseModelDuplication(model),
+		"Duplication": analyseModelDuplication(model),
 		"Unit size": analyseModelUnitSize(model, suggs=suggs),
 		"Unit testing": analyseModelUnitTesting(model)
 	);
