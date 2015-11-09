@@ -3,6 +3,7 @@ module Analysis::Complexity
 import lang::java::jdt::m3::Core;
 import lang::java::m3::Core;
 import lang::java::m3::AST;
+
 import List;
 import util::Math;
 import IO;
@@ -11,6 +12,7 @@ import Set;
 import Metrics::Complexity;
 import Analysis::Utils;
 import Metrics::Volume;
+import Metrics::Utils;
 
 
 public Score analyseModelComplexity(M3 model, int suggs = 5) {
@@ -46,6 +48,15 @@ public Score getModelCcScore(map[Risk,real] rv) {
 	if (m <= 40 && h <= 10 && vh <= 0) return O();
 	if (m <= 50 && h <= 15 && vh <= 5) return Min();
 	return MinMin();
+}
+
+public map[Risk,int] getVolumePerRisk(rel[str,loc,Risk] methodrisks) {
+	r = (Low(): 0, Moderate(): 0, High(): 0, VeryHigh(): 0);
+	for (<n,l,risk> <- methodrisks) {
+		mvol = size(getLinesInUnit(l));
+		r[risk] += mvol;
+	};
+	return r;
 }
 
 public rel[str,loc,Risk] getCcRiskPerMethod(rel[str,loc,int] methodccs) {

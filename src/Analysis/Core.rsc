@@ -24,7 +24,7 @@ public map[str,Score] computeModelScpScores(M3 model, int suggs = 5) {
 		"Volume": analyseModelVolume(model),
 		"Complexity per unit": analyseModelComplexity(model, suggs=suggs),
 		"Duplication": O(), //analyseModelDuplication(model),
-		"Unit size": O(), //analyseModelUnitSize(model, suggs=suggs),
+		"Unit size": analyseModelUnitSize(model, suggs=suggs),
 		"Unit testing": analyseModelUnitTesting(model)
 	);
 }
@@ -43,9 +43,7 @@ public Score analyseModel(M3 model, int suggs = 5) {
 	println();
 	scpscores = computeModelScpScores(model,suggs=suggs);
 	
-	println("-- Summary --");
-	println();
-	
+	println("-- Summary --");	
 	println("Source code property scores:");
 	for (prop <- scpscores) {
 		println("<prop>: <scpscores[prop]>");

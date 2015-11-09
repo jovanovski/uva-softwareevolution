@@ -9,10 +9,11 @@ import Set;
 
 import Analysis::Utils;
 import Metrics::Volume;
+import Metrics::Utils;
 
 public Score analyseModelUnitSize(M3 model, int suggs = 5) {
 	methodvols = countLinesInModules(model);
-	rvl = getRelVolumePerRisk(getVolumePerRisk(getUnitSizeRiskPerMethod(methodvols), methodvols));
+	rvl = getRelVolumePerRisk(getVolumePerRisk(getUnitSizeRiskPerMethod(methodvols)));
 	score = getUnitSizeScore(rvl);
 	
 	println("Unit size: <score>");
@@ -45,6 +46,15 @@ public Score getUnitSizeScore(map[Risk,real] rv) {
 	if (m <= 35.4 && h <= 25.0 && vh <= 14.0) return O();
 	if (m <= 54.0 && h <= 43.0 && vh <= 24.2) return Min();
 	return MinMin();
+}
+
+public map[Risk,int] getVolumePerRisk(rel[loc,Risk] methodrisks) {
+	r = (Low(): 0, Moderate(): 0, High(): 0, VeryHigh(): 0);
+	for (<l,risk> <- methodrisks) {
+		mvol = size(getLinesInUnit(l));
+		r[risk] += mvol;
+	};
+	return r;
 }
 
 public rel[loc,Risk] getUnitSizeRiskPerMethod(rel[loc,int] methodunitsizes) {

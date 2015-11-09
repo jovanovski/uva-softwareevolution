@@ -39,12 +39,3 @@ public map[Risk,real] getRelVolumePerRisk(map[Risk,int] rv) {
 	return (risk: toReal(rv[risk])/total*100 | risk <- rv);
 }
 
-public map[Risk,int] getVolumePerRisk(rel[str,loc,Risk] methodrisks) {
-	r = (Low(): 0, Moderate(): 0, High(): 0, VeryHigh(): 0);
-	for (<n,l,risk> <- methodrisks) {
-		mvol = size(getLinesInUnit(l));
-		r[risk] += mvol;
-	};
-	return r;
-}
-
