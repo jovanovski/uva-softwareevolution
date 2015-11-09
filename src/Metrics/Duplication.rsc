@@ -53,7 +53,7 @@ public int duplicationInLines(list[lrel[loc, int, str]] lines) {
 			myMap[linesNew] = 1;
 		}
 	}
-	println(dupLines);
+
 	return size(dupLines);
 	//return (0 | it + (i-1) | i <- range(myMap), i > 1)*6;
 }
