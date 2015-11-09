@@ -10,6 +10,7 @@ import Analysis::Complexity;
 import Analysis::Duplication;
 import Analysis::Volume;
 import Analysis::UnitSize;
+import Analysis::UnitTesting;
 
 map[str, list[str]] scpmntmap = (
 	"Analysability": ["Volume", "Duplication", "Unit size", "Unit testing"],
@@ -24,7 +25,7 @@ public map[str,Score] computeModelScpScores(M3 model, int suggs = 5) {
 		"Complexity per unit": analyseModelComplexity(model, suggs=suggs),
 		"Duplication": analyseModelDuplication(model),
 		"Unit size": analyseModelUnitSize(model, suggs=suggs),
-		"Unit testing": O()
+		"Unit testing": analyseModelUnitTesting(model)
 	);
 }
 
@@ -36,9 +37,13 @@ public map[str,Score] computeMntScores(map[str,Score] scpscores) {
 //test bool f(X t) = y(_) := t;
 
 public Score analyseModel(M3 model, int suggs = 5) {
-	println("Computing source code property scores.");
+	println("-- Analysis --");
 	println();
 	scpscores = computeModelScpScores(model,suggs=suggs);
+	
+	println("-- Summary --");
+	println();
+	
 	println("Source code property scores:");
 	for (prop <- scpscores) {
 		println("<prop>: <scpscores[prop]>");
@@ -54,6 +59,8 @@ public Score analyseModel(M3 model, int suggs = 5) {
 	
 	score = avgscore([mntscores[s] | s <- mntscores]);
 	println("Overall score: <score>");
+	
+	println("-- Done --");
 	
 	return score;
 }

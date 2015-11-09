@@ -8,14 +8,6 @@ import IO;
 
 import Metrics::Utils;
 
-// assertion density per kloc
-public int getModelAssertionDensity(M3 model) {
-	vol = countLinesInModel(model);
-	assts = getModelAssertions(model);
-	
-	return round(toReal(assts) / (toReal(vol) / 1000)); 	
-}
-
 public int getModelAssertions(M3 model) {
 	return (0 | it + asserts | <methodloc, asserts> <- getAssertsPerMethod(model));
 }
