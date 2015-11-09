@@ -41,10 +41,10 @@ public Score getUnitSizeScore(map[Risk,real] rv) {
 	h = rv[High()];
 	m = rv[Moderate()];
 	
-	if (m <= 12.3 && h <= 6.1 && vh <= 0.8) return PlusPlus();
-	if (m <= 27.6 && h <= 16.1 && vh <= 7.0) return Plus();
-	if (m <= 35.4 && h <= 25.0 && vh <= 14.0) return O();
-	if (m <= 54.0 && h <= 43.0 && vh <= 24.2) return Min();
+	if (m <= 25 && h <= 0 && vh <= 0) return PlusPlus();
+	if (m <= 30 && h <= 5 && vh <= 0) return Plus();
+	if (m <= 40 && h <= 10 && vh <= 0) return O();
+	if (m <= 50 && h <= 15 && vh <= 5) return Min();
 	return MinMin();
 }
 
@@ -62,8 +62,8 @@ public rel[loc,Risk] getUnitSizeRiskPerMethod(rel[loc,int] methodunitsizes) {
 } 
 
 public Risk getUnitSizeRisk(int size) {
-	if (size <= 24) return Low();
-	if (size <= 31) return Moderate();
-	if (size <= 48) return High();
+	if (size <= 20) return Low();
+	if (size <= 50) return Moderate();
+	if (size <= 100) return High();
 	return VeryHigh();
 }
