@@ -11,7 +11,7 @@ import util::Math;
 import Metrics::Utils;
 
 // class, nr of fields, nr of methods, lcom value
-public rel[loc,int,int,real] getLcomPerClass(M3 model) {
+public rel[loc,int,int,real] getModelLcomPerClass(M3 model) {
 	r = {};	
 	for (c <- classes(model), <fs,ms> := getMethodsAndFields(c, model)) {
 		ma = {};
