@@ -16,7 +16,7 @@ public Score analyseModelDuplication(M3 model) {
 	score = duplicationMetric(dup, ls);
 	
 	println("Duplication: <score>");
-	println("Procentage of code duplicated: <(toReal(dup)/toReal(ls))*100>%");
+	println("Percentage of code duplicated: <(toReal(dup)/toReal(ls))*100>%");
 	println("LOC that are duplicates: <dup>");
 	println();
 	
