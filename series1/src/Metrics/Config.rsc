@@ -4,4 +4,4 @@ module Metrics::Config
 *  WARNING: Will run slower with this, for small code is acceptable (~ +1min), for larger
 *  ones, nope.
 */ 
-public bool useDocumentation = false;
+public bool useDocumentation = true;
