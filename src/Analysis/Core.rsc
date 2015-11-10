@@ -37,11 +37,6 @@ public map[str,Score] computeMntScores(map[str,Score] scpscores) {
 	return (c: avgscore([scpscores[p] | p <- scpmntmap[c]]) | c <- scpmntmap);
 }
 
-data X = x() | y(int i);
-test bool f() {
-	return false;
-}
-
 public Score analyseModel(M3 model, int suggs = 5) {
 	println("-- Analysis --");
 	println();
