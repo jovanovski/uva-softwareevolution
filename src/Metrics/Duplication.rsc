@@ -14,9 +14,7 @@ import Metrics::Volume;
 import Metrics::Utils;
 
 public int duplicationInModel(M3 model){
-	//Get all classes (skip looking for duplication in imports)
 	set[loc] units = classes(model);
-	//Get all the lines of code from all units, ignoring comments and empty lines as usual
 	list[lrel[loc, int, str]] lines = [];
 	for(loc L <- units){
 		list[str] linesOfCode = getLinesInUnit(L, model@containment, model@documentation);
@@ -64,5 +62,4 @@ public int duplicationInLines(list[lrel[loc, int, str]] lines) {
 	}
 
 	return size(dupLines);
-	//return (0 | it + (i-1) | i <- range(myMap), i > 1)*6;
 }
