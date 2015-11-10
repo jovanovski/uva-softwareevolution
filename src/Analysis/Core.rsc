@@ -11,12 +11,13 @@ import Analysis::Duplication;
 import Analysis::Volume;
 import Analysis::UnitSize;
 import Analysis::UnitTesting;
+import Analysis::Cohesion;
 
 public bool useDocumentation = false;
 
 map[str, list[str]] scpmntmap = (
-	"Analysability": ["Volume", "Duplication", "Unit size", "Unit testing"],
-	"Changeability": ["Complexity per unit", "Duplication"],
+	"Analysability": ["Volume", "Duplication", "Unit size", "Unit testing", "Cohesion"],
+	"Changeability": ["Complexity per unit", "Duplication", "Cohesion"],
 	"Stability": ["Unit testing"],
 	"Testability": ["Complexity per unit", "Unit size", "Unit testing"] 
 ); 
@@ -27,7 +28,8 @@ public map[str,Score] computeModelScpScores(M3 model, int suggs = 5) {
 		"Complexity per unit": analyseModelComplexity(model, suggs=suggs),
 		"Duplication": analyseModelDuplication(model),
 		"Unit size": analyseModelUnitSize(model, suggs=suggs),
-		"Unit testing": analyseModelUnitTesting(model)
+		"Unit testing": analyseModelUnitTesting(model) ,
+		"Cohesion": analyseModelCohesion(model, suggs=suggs)
 	);
 }
 
