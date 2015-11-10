@@ -5,54 +5,57 @@ import lang::java::m3::Core;
 import lang::java::m3::AST;
 import IO;
 import Set;
+import Node;
+import util::Math;
 
 import Metrics::Utils;
 
-public value getLcomPerClass(M3 model) {
-	c = {};
-	for (floc <- files(model)) {
-		ast = createAstFromFile(floc, false);
-		visit(ast) {
-			case \class(str name, list[Type] extends, list[Type] implements, list[Declaration] body): c += <floc, name, getLcom(body)>;
-		}
-	}
-	return c;
-}
-
-num getLcom(list[Declaration] ds) {
-	fs = getClassFields(ds);
-	c = {};
-	for (d <- ds) { 
-		visit (d) {
-			case m:\method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl): c += size(getFieldsAccessed(impl, fs));
-		}
-	}
-	
-	sc = size(c);
-	sfs = size(fs);
-	return sc > 0 && sfs > 0 ? sum({0.0}+c) / (sc * sfs) : 0;
-}
-
-set[str] getClassFields(list[Declaration] body) {
-	fs = {};
-	for (\field(Type \type, list[Expression] fragments) <- body) {
-		for (d <- fragments) {
-			switch(d) {
-				case v:\variable(str name, int extraDimensions): fs += name;
-				case v:\variable(str name, int extraDimensions, Expression \initializer): fs += name;
+// class, nr of fields, nr of methods, lcom value
+public rel[loc,int,int,real] getLcomPerClass(M3 model) {
+	r = {};	
+	for (c <- classes(model), <fs,ms> := getMethodsAndFields(c, model)) {
+		ma = {};
+		for (m <- ms) {
+			rel[loc,loc] fa = {};		
+			ast = getMethodASTEclipse(m, model=model);
+			top-down-break visit(ast) {
+				case \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl): ma += <m,getFieldsAccessed(impl,fs)>;
+				case \constructor(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl): ma += <m,getFieldsAccessed(impl,fs)>;
 			}
 		}
+		fsize = size(fs);
+		msize = size(ms);
+		lcom = fsize > 0 && msize > 0 ? 1 - (0.0 | it + size(as) | <m,as> <- ma) / (msize * fsize) : 0.0;
+		
+		r += <c, fsize, msize, lcom>;
 	}
-	return fs;
+	
+	return r;
 }
 
-set[str] getFieldsAccessed(Statement s, set[str] fields) {
+tuple[set[loc],set[loc]] getMethodsAndFields(c, M3 model) {
+	set[loc] fs = {};
+	set[loc] ms = {};
+	for(sc <- model@extends[c], <sfs,sms> := getMethodsAndFields(sc, model)) {
+		fs += sfs;
+		ms += sms;
+	}
+	for (l <- model@containment[c]) {
+		if (isField(l)) {
+			fs += l;
+		} else if (isMethod(l)) {
+			ms += l;
+		}
+	}
+	return <fs,ms>;
+}
+
+set[loc] getFieldsAccessed(Statement s, set[loc] fields) {
 	c = {};
 	top-down visit (s) {
-		case \fieldAccess(bool isSuper, \this(), str name): c += name; 
-		case \fieldAccess(bool isSuper, str name): c += name;
-		case \simpleName(str name): if (name in fields) c += name;
-		case \qualifiedName(Expression qualifier, Expression expression): insert \characterLiteral("foo");
+		case x:\fieldAccess(bool isSuper, Expression expression, str name): if (x@decl in fields) c += x@decl;
+		case x:\fieldAccess(bool isSuper, str name): if (x@decl in fields) c += x@decl;
+		case x:\simpleName(str name): if (x@decl in fields) c += x@decl;
 	}
 	return c;
 }
