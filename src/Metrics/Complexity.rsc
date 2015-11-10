@@ -25,7 +25,6 @@ int getStatementCc(Statement s) {
 	c = 1;
 	visit (s) {
 		// statement
-		case \do(Statement body, Expression condition): c += 1;
 		case \foreach(Declaration parameter, Expression collection, Statement body): c += 1;
 		case \for(list[Expression] initializers, Expression condition, list[Expression] updaters, Statement body): c += 1;
 		case \for(list[Expression] initializers, list[Expression] updaters, Statement body): c += 1;
