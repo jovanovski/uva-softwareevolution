@@ -26,7 +26,7 @@ public Score analyseModelCohesion(M3 model, int suggs=5) {
 	println("  moderate: <rvl[Moderate()]>");
 	println("  low: <rvl[Low()]>");
 	println();
-	println("The <suggs> units with the highest complexity are:");
+	println("The <suggs> units with the highest lcom rating are:");
 	for (<l,_,_,lcom> <- take(suggs,sort(classlcoms, bool (<la,_,_,lcoma>,<lb,_,_,lcomb>) { return lcoma > lcomb; }))) {
 		println("<lcom>: <l>");
 	};
