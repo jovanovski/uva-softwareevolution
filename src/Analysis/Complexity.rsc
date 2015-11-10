@@ -29,8 +29,8 @@ public Score analyseModelComplexity(M3 model, int suggs = 5) {
 	println("  low: <rvl[Low()]>");
 	println();
 	println("The <suggs> units with the highest complexity are:");
-	for (<n,l,cc> <- take(suggs,sort(methodccs, bool (<na,la,cca>,<nb,lb,ccb>) { return cca > ccb; }))) {
-		println("<cc>: <n> in <l>");
+	for (<l,cc> <- take(suggs,sort(methodccs, bool (<la,cca>,<lb,ccb>) { return cca > ccb; }))) {
+		println("<cc>: <l>");
 	};
 	println("These units could be good candidates for refactoring.");
 	println();	
@@ -38,17 +38,8 @@ public Score analyseModelComplexity(M3 model, int suggs = 5) {
 	return score;
 }
 
-public map[Risk,int] getVolumePerRisk(rel[str,loc,Risk] methodrisks, rel[loc, loc] con, rel[loc, loc] doc) {
-	r = (Low(): 0, Moderate(): 0, High(): 0, VeryHigh(): 0);
-	for (<n,l,risk> <- methodrisks) {
-		mvol = size(getLinesInUnit(l, con, doc));
-		r[risk] += mvol;
-	};
-	return r;
-}
-
-public rel[str,loc,Risk] getCcRiskPerMethod(rel[str,loc,int] methodccs) {
-	return { <mname,mloc,getCcRisk(mcc)> | <mname,mloc,mcc> <- methodccs };
+public rel[loc,Risk] getCcRiskPerMethod(rel[loc,int] methodccs) {
+	return { <mloc,getCcRisk(mcc)> | <mloc,mcc> <- methodccs };
 }
 
 public Risk getCcRisk(int cc) {

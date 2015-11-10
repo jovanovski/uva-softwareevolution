@@ -5,16 +5,17 @@ import lang::java::m3::Core;
 import lang::java::m3::AST;
 import List;
 import IO;
+import Node;
 
 import Metrics::Utils;
 
-public rel[str,loc,int] getModelCcPerMethod(M3 model) {
+public rel[loc,int] getModelCcPerMethod(M3 model) {
 	c = {};
 	for (floc <- files(model)) {
-		ast = createAstFromFile(floc, false);
+		ast = createAstFromFile(floc, true);
 		visit(ast) {
-			case m:\method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl): c += <name, m@src, getStatementCc(impl)>;
-			case m:\constructor(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl): c += <name, m@src, getStatementCc(impl)>;
+			case m:\method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl): c += <m@decl, getStatementCc(impl)>;
+			case m:\constructor(str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl): c += <m@decl, getStatementCc(impl)>;
 		}
 	}
 	return c;
