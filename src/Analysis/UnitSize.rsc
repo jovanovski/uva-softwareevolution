@@ -14,7 +14,7 @@ import Metrics::Utils;
 public Score analyseModelUnitSize(M3 model, int suggs = 5) {
 	methodvols = countLinesInModules(model);
 	rvl = getRelVolumePerRisk(getVolumePerRisk(getUnitSizeRiskPerMethod(methodvols), model@containment, model@documentation));
-	score = getUnitSizeScore(rvl);
+	score = getRiskRatioScore(rvl);
 	
 	println("Unit size: <score>");
 	println();
@@ -33,28 +33,6 @@ public Score analyseModelUnitSize(M3 model, int suggs = 5) {
 	println();
 	
 	return score;
-}
-
-// categorization source: http://swerl.tudelft.nl/twiki/pub/Main/TechnicalReports/TUD-SERG-2014-008.pdf
-public Score getUnitSizeScore(map[Risk,real] rv) {
-	vh = rv[VeryHigh()];
-	h = rv[High()];
-	m = rv[Moderate()];
-	
-	if (m <= 25 && h <= 0 && vh <= 0) return PlusPlus();
-	if (m <= 30 && h <= 5 && vh <= 0) return Plus();
-	if (m <= 40 && h <= 10 && vh <= 0) return O();
-	if (m <= 50 && h <= 15 && vh <= 5) return Min();
-	return MinMin();
-}
-
-public map[Risk,int] getVolumePerRisk(rel[loc,Risk] methodrisks, rel[loc, loc] con, rel[loc, loc] doc) {
-	r = (Low(): 0, Moderate(): 0, High(): 0, VeryHigh(): 0);
-	for (<l,risk> <- methodrisks) {
-		mvol = size(getLinesInUnit(l, con, doc));
-		r[risk] += mvol;
-	};
-	return r;
 }
 
 public rel[loc,Risk] getUnitSizeRiskPerMethod(rel[loc,int] methodunitsizes) {
