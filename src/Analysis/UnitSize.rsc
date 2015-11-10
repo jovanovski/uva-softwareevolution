@@ -17,14 +17,11 @@ public Score analyseModelUnitSize(M3 model, int suggs = 5) {
 	score = getRiskRatioScore(rvl);
 	
 	println("Unit size: <score>");
-	println();
 	println("Risk volume (%):");
 	println("  very high: <rvl[VeryHigh()]>");
 	println("  high: <rvl[High()]>");
 	println("  moderate: <rvl[Moderate()]>");
-	println("  low: <rvl[Low()]>");
-	println();
-	
+	println("  low: <rvl[Low()]>");	
 	println("The <suggs> largest units are:");
 	for (<m,v> <- take(suggs,sort(methodvols, bool (<ma,va>,<mb,vb>) { return va > vb; }))) {
 		println("<v>: <m>");

@@ -20,9 +20,7 @@ public Score analyseModelUnitTesting(M3 model) {
 	density = round(toReal(assts) / (toReal(vol) / 1000));
 	score = getAssertionDensityScore(density);
 	
-	println("Unit Testing: <score>");
-	println();
-	
+	println("Unit Testing: <score>");	
 	println("Total assertions: <assts>");
 	println("Assertion density: <density>");
 	println();

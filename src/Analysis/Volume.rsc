@@ -12,9 +12,7 @@ public Score analyseModelVolume(M3 model) {
 	ls = countLinesInModel(model);
 	score = volumeMetric(ls);
 	
-	println("Volume: <score>");
-	println();
-	
+	println("Volume: <score>");	
 	println("Lines of code (not counting empty & comments): <ls>");
 	println();
 	

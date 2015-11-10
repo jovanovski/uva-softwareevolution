@@ -49,17 +49,19 @@ public Score analyseModel(M3 model, int suggs = 5) {
 	
 	println("-- Summary --");	
 	println("Source code property scores:");
+	println();
 	for (prop <- scpscores) {
 		println("<prop>: <scpscores[prop]>");
 	};
 	
-	println("");
+	println();
 	println("Maintainability scores:");
+	println();
 	mntscores = computeMntScores(scpscores);
 	for (c <- mntscores) {
 		println("<c>:<mntscores[c]>");
 	}
-	println("");
+	println();
 	
 	score = avgscore([mntscores[s] | s <- mntscores]);
 	println("Overall score: <score>");
