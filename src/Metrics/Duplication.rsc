@@ -36,21 +36,30 @@ public int duplicationInModel(M3 model){
 
 public int duplicationInLines(list[lrel[loc, int, str]] lines) {
 	int dup = 0;
-	map[list[str], int] myMap = ();
+	map[list[str], lrel[loc, int, str]] myMap = ();
 	set[tuple[loc,int,str]] dupLines = {};
 	
 	for(lines6 <- lines){
 		list[str] linesNew = [lines6[0][2], lines6[1][2], lines6[2][2], lines6[3][2], lines6[4][2], lines6[5][2]];
 		if(linesNew in myMap){
+			lrel[loc, int, str] oldLines = myMap[linesNew];
+			
 			dupLines += lines6[0];
 			dupLines += lines6[1];
 			dupLines += lines6[2];
 			dupLines += lines6[3];
 			dupLines += lines6[4];
 			dupLines += lines6[5];
+		
+			dupLines += oldLines[0];
+			dupLines += oldLines[1];
+			dupLines += oldLines[2];
+			dupLines += oldLines[3];
+			dupLines += oldLines[4];
+			dupLines += oldLines[5];
 		}
 		else{
-			myMap[linesNew] = 1;
+			myMap[linesNew] = lines6;
 		}
 	}
 
