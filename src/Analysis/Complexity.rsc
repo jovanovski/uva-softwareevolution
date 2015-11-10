@@ -17,7 +17,7 @@ import Metrics::Utils;
 
 public Score analyseModelComplexity(M3 model, int suggs = 5) {
 	methodccs = getModelCcPerMethod(model);
-	rvl = getRelVolumePerRisk(getVolumePerRisk(getCcRiskPerMethod(methodccs), model@containment));
+	rvl = getRelVolumePerRisk(getVolumePerRisk(getCcRiskPerMethod(methodccs), model@containment, model@documentation));
 	score = getModelCcScore(rvl);
 	
 	println("Complexity: <score>");
@@ -50,10 +50,10 @@ public Score getModelCcScore(map[Risk,real] rv) {
 	return MinMin();
 }
 
-public map[Risk,int] getVolumePerRisk(rel[str,loc,Risk] methodrisks, rel[loc, loc] con) {
+public map[Risk,int] getVolumePerRisk(rel[str,loc,Risk] methodrisks, rel[loc, loc] con, rel[loc, loc] doc) {
 	r = (Low(): 0, Moderate(): 0, High(): 0, VeryHigh(): 0);
 	for (<n,l,risk> <- methodrisks) {
-		mvol = size(getLinesInUnit(l, con));
+		mvol = size(getLinesInUnit(l, con, doc));
 		r[risk] += mvol;
 	};
 	return r;

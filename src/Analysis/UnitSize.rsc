@@ -13,7 +13,7 @@ import Metrics::Utils;
 
 public Score analyseModelUnitSize(M3 model, int suggs = 5) {
 	methodvols = countLinesInModules(model);
-	rvl = getRelVolumePerRisk(getVolumePerRisk(getUnitSizeRiskPerMethod(methodvols), model@containment));
+	rvl = getRelVolumePerRisk(getVolumePerRisk(getUnitSizeRiskPerMethod(methodvols), model@containment, model@documentation));
 	score = getUnitSizeScore(rvl);
 	
 	println("Unit size: <score>");
@@ -48,10 +48,10 @@ public Score getUnitSizeScore(map[Risk,real] rv) {
 	return MinMin();
 }
 
-public map[Risk,int] getVolumePerRisk(rel[loc,Risk] methodrisks, rel[loc, loc] con) {
+public map[Risk,int] getVolumePerRisk(rel[loc,Risk] methodrisks, rel[loc, loc] con, rel[loc, loc] doc) {
 	r = (Low(): 0, Moderate(): 0, High(): 0, VeryHigh(): 0);
 	for (<l,risk> <- methodrisks) {
-		mvol = size(getLinesInUnit(l, con));
+		mvol = size(getLinesInUnit(l, con, doc));
 		r[risk] += mvol;
 	};
 	return r;

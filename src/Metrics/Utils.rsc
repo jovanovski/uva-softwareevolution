@@ -26,14 +26,17 @@ public set[loc] getConnectedStuff(loc unit, rel[loc, loc] con){
 	return stuff;
 }
 
-public set[loc] getDocumentationForUnit(loc unit, rel[loc, loc] con){
+public set[loc] getDocumentationForUnit(loc unit, rel[loc, loc] con, rel[loc, loc] doc){
 	set[loc] subunits = getConnectedStuff(unit, con);
-	return {newloc | <subunit, newloc> <- model@documentation, subunit <- subunits};
+	return {newloc | <subunit, newloc> <- doc, subunit <- subunits};
 }
 
-public list[str] getLinesInUnit(loc unit, rel[loc, loc] con){
+public list[str] getLinesInUnit(loc unit, rel[loc, loc] con, rel[loc, loc] documentation){
 	str read = readFile(unit);
-	
+	set[loc] docs = getDocumentationForUnit(unit, con, documentation);
+	for(doc <- docs){
+		read = replaceAll(read, readFile(doc), "");
+	}
 	//Replace all tabs and returns because we don't need them in parsing
 	read = replaceAll(read, "\t", "");
 	read = replaceAll(read, "\r", "");

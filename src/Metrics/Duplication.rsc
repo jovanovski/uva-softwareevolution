@@ -19,7 +19,7 @@ public int duplicationInModel(M3 model){
 	//Get all the lines of code from all units, ignoring comments and empty lines as usual
 	list[lrel[loc, int, str]] lines = [];
 	for(loc L <- units){
-		list[str] linesOfCode = getLinesInUnit(L, model@containment);
+		list[str] linesOfCode = getLinesInUnit(L, model@containment, model@documentation);
 		if(size(linesOfCode) > 5){
 			list[list[str]] foundBlocks = [[a,b,c,d,e,f] | [*_,a,b,c,d,e,f,*_] := linesOfCode];
 			int i = 1;
