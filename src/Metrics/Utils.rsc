@@ -3,9 +3,10 @@ module Metrics::Utils
 import lang::java::jdt::m3::Core;
 import lang::java::m3::Core;
 import lang::java::m3::AST;
+import Metrics::Config;
 import IO;
 import String;
-import List;
+import List; 
 import Set;
 
 public set[loc] getConnectedStuff(loc unit, rel[loc, loc] con){
@@ -33,10 +34,14 @@ public set[loc] getDocumentationForUnit(loc unit, rel[loc, loc] con, rel[loc, lo
 
 public list[str] getLinesInUnit(loc unit, rel[loc, loc] con, rel[loc, loc] documentation){
 	str read = readFile(unit);
-	set[loc] docs = getDocumentationForUnit(unit, con, documentation);
-	for(doc <- docs){
-		read = replaceAll(read, readFile(doc), "");
+	//Delete comments from M3@documentation
+	if(useDocumentation){
+		set[loc] docs = getDocumentationForUnit(unit, con, documentation);
+		for(doc <- docs){
+			read = replaceAll(read, readFile(doc), "");
+		}
 	}
+	
 	//Replace all tabs and returns because we don't need them in parsing
 	read = replaceAll(read, "\t", "");
 	read = replaceAll(read, "\r", "");

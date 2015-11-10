@@ -12,6 +12,8 @@ import Analysis::Volume;
 import Analysis::UnitSize;
 import Analysis::UnitTesting;
 
+public bool useDocumentation = false;
+
 map[str, list[str]] scpmntmap = (
 	"Analysability": ["Volume", "Duplication", "Unit size", "Unit testing"],
 	"Changeability": ["Complexity per unit", "Duplication"],
