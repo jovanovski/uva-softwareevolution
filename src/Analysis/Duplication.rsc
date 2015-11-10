@@ -8,6 +8,7 @@ import Metrics::Volume;
 import Metrics::Duplication;
 import Analysis::Utils;
 import IO;
+import util::Math;
 
 public Score analyseModelDuplication(M3 model) {
 	int dup = duplicationInModel(model);
@@ -15,6 +16,8 @@ public Score analyseModelDuplication(M3 model) {
 	score = duplicationMetric(dup, ls);
 	
 	println("Duplication: <score>");
+	println("Percentage of code duplicated: <(toReal(dup)/toReal(ls))*100>%");
+	println("LOC that are duplicates: <dup>");
 	println();
 	
 	return score;
