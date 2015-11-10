@@ -8,8 +8,7 @@ import String;
 import List;
 import Set;
 
-public set[loc] getConnectedStuff(loc unit, M3 model){
-	rel[loc, loc] con = model@containment;
+public set[loc] getConnectedStuff(loc unit, rel[loc, loc] con){
 	set[loc] stuff = {unit};
 	list[loc] tmp = [unit];
 	
@@ -27,12 +26,12 @@ public set[loc] getConnectedStuff(loc unit, M3 model){
 	return stuff;
 }
 
-public set[loc] getDocumentationForUnit(loc unit, M3 model){
-	set[loc] subunits = getConnectedStuff(unit, model);
+public set[loc] getDocumentationForUnit(loc unit, rel[loc, loc] con){
+	set[loc] subunits = getConnectedStuff(unit, con);
 	return {newloc | <subunit, newloc> <- model@documentation, subunit <- subunits};
 }
 
-public list[str] getLinesInUnit(loc unit){
+public list[str] getLinesInUnit(loc unit, rel[loc, loc] con){
 	str read = readFile(unit);
 	
 	//Replace all tabs and returns because we don't need them in parsing

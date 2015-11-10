@@ -26,10 +26,10 @@ public rel[str,loc,int] getModelLinesPerMethod(M3 model) {
 public rel[loc,int] countLinesInModules(M3 model){
 	rel[loc,int] res = {};
 	
-	set[loc] units = methods(model); // [ i[0] | i <- model@containment, isMethod(i[0])];
+	set[loc] units = methods(model);
 	
 	for(unit <- units){
-		res = res + <unit, size(getLinesInUnit(unit))>;
+		res = res + <unit, size(getLinesInUnit(unit, model@containment))>;
 	}
 	
 	return res;
@@ -37,5 +37,5 @@ public rel[loc,int] countLinesInModules(M3 model){
 
 
 public int countLinesInModel(M3 model){
-	return (0 | it + size(getLinesInUnit(l)) | l <- files(model));
+	return (0 | it + size(getLinesInUnit(l, model@containment)) | l <- files(model));
 }
