@@ -47,9 +47,9 @@ public Score analyseModel(M3 model, int suggs = 5) {
 	println();
 	for (prop <- scpscores) {
 		println("<prop>: <scpscores[prop]>");
-	};
-	
+	};	
 	println();
+	
 	println("Maintainability scores:");
 	println();
 	mntscores = computeMntScores(scpscores);
