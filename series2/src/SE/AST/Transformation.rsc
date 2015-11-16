@@ -20,7 +20,7 @@ private Statement listStatementNodes(Statement s) {
 }
 
 public Declaration anonymizeTypes(Declaration d) {
-	return visit(d) {
+	return top-down visit(d) {
 		case Type t1 => \void()
 	}
 }
