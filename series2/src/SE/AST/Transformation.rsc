@@ -15,7 +15,7 @@ private list[Statement] listStatementNodes(Statement s) {
 
 private Statement listStatementNodes(Statement s) {
 	return top-down visit(s) {
-		case Statement s1: if (s != s1) return \empty();
+		case Statement s1 => s == s1 ? s : \empty()
 	}
 }
 
