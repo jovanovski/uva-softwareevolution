@@ -2,19 +2,17 @@ module SE::AST::Transformation
 
 import lang::java::m3::AST;
 
-public list[Statement] listStatementNodes(\method(_, _, _, _, Statement impl)) = listStatements(impl);
-public list[Statement] listStatementNodes(\constructor(_, _, _, Statement impl)) = listStatements(impl);
-
-private list[Statement] listStatementNodes(Statement s) {
+public list[Statement] listStatementNodes(Declaration d) {
 	sts = [];
-	top-down visit(s) {
-		case Statement s1: if (s != s1) sts += replaceNestedStatements(s1);	
+	top-down visit(d) {
+		case Statement s: sts += replaceNestedStatementsAndStatementLists(s);
 	}
 	return sts;
 }
 
-private Statement listStatementNodes(Statement s) {
+private Statement replaceNestedStatementsAndStatementLists(Statement s) {
 	return top-down visit(s) {
+		case list[Statement] l => []
 		case Statement s1 => s == s1 ? s : \empty()
 	}
 }
