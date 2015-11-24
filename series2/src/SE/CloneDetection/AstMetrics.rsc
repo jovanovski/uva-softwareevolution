@@ -18,6 +18,9 @@ alias VectorTemplate = list[NodeType];
 alias Vector = list[int];
 alias Vectors = rel[Vector,Maybe[loc]];
 
+alias NodeCount = map[NodeType, int];
+alias NodeCounts = rel[NodeCount,Maybe[loc]];
+
 public set[NodeType] getNodeTypes(M3 model) {
 	set[NodeType] nodeTypes = {};
 	for (m <- methods(model), mast <- getMethodASTEclipse(m, model=model)) {
@@ -32,37 +35,44 @@ public set[NodeType] getNodeTypes(M3 model) {
 
 public Vectors computeVectors(M3 model, int minT=20) {
 	nodeTypes = getNodeTypes(model);
-	VectorTemplate template = sort(nodeTypes);
-	Vectors vs = {};
-	for (m <- methods(model), node mast <- getMethodASTEclipse(m, model=model)) {
-		<_,_,mvs> = computeVectorsRecursively(mast, template,minT);
-		vs += mvs;
-	}
-	return vs;
+	list[NodeType] template = sort(nodeTypes);	
+	return {<[nt in nc ? nc[nt] : 0 | nt <- template],l> | <nc,l> <- computeNodeCounts(model,minT=minT)};
 }
 
-public Vector emptyVector(VectorTemplate template) = [0 | _ <- template];
-public Vector mergeVectors(int templateSize, Vector v1, Vector v2) = [v1[i] + v2[i] | i <- [0..(templateSize)]];
+public NodeCounts computeNodeCounts(M3 model, int minT=20) {
+	NodeCounts ncs = {};
+	for (m <- methods(model), node mast <- getMethodASTEclipse(m, model=model)) {
+		<_,_,mncs> = computeNodeCountsRecursively(mast,minT);
+		ncs += mncs;
+	}
+	return ncs;
+}
 
-private tuple[int, Vector, Vectors] computeVectorsRecursively(value n, VectorTemplate template, int minT) {
-    s = size(template);
+public NodeCount mergeNodeCounts(NodeCount nc1, NodeCount nc2) {
+	for (i <- nc2) {
+		nc1[i] = i in nc1 ? nc1[i] + nc2[i] : nc2[i];
+	}
+	return nc1;
+}
+
+private tuple[int, NodeCount, NodeCounts] computeNodeCountsRecursively(value n, int minT) {
     c = 0;
-    v = emptyVector(template);
-    Vectors vs = {};
+    nc = ();
+    NodeCounts ncs = {};
 	switch (n) {
 	    case list[value] xs: {
 	    	for (x <- xs) {
-				<xc,xv,xvs> = computeVectorsRecursively(x, template, minT);
+				<xc,xnc,xncs> = computeNodeCountsRecursively(x, minT);
 				c += xc;
-				v = mergeVectors(s, v,xv);
-				vs += xvs;
+				nc = mergeNodeCounts(nc,xnc);
+				ncs += xncs;
 			}
 	    }
 	    case node n: {
-		    <xc,xv,xvs> = computeVectorsRecursively(getChildren(n), template, minT);
+		    <xc,xnc,xncs> = computeNodeCountsRecursively(getChildren(n), minT);
 		    c += xc;
-		    v = mergeVectors(s, v,xv);
-		    vs += xvs;
+		    nc = mergeNodeCounts(nc,xnc);
+		    ncs += xncs;
 			NodeType nt;
 			loc l;
 	    	switch (n) {
@@ -81,13 +91,12 @@ private tuple[int, Vector, Vectors] computeVectorsRecursively(value n, VectorTem
 	    	}
 			 if (nt?) {
 			 	c += 1;
-				i = indexOf(template, nt);
-				v[i] = v[i] + 1;
+			 	nc[nt] = nt in nc ? nc[nt] + 1 : 1;			 	
 				if (c >= minT) {
-					vs += <v,l>;
+					ncs += <nc,l>;
 				}				
 			}
 	    } 
 	}
-	return <c, v, vs>;
+	return <c, nc, ncs>;
 }
