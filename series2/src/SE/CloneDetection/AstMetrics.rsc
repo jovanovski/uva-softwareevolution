@@ -20,13 +20,21 @@ alias Vectors = rel[Vector,loc];
 alias NodeCount = map[NodeType, int];
 alias NodeCounts = rel[NodeCount,loc];
 
+public map[Vector,set[loc]] groupVectors(Vectors vs) {
+	map[Vector,set[loc]] vsm = ();
+	for (<v,l> <- vs) {
+		vsm[v] = v in vsm ? vsm[v] + l : {l};
+	}
+	return vsm;
+}
+
 public set[NodeType] getNodeTypes(M3 model) {
 	set[NodeType] nodeTypes = {};
 	for (m <- methods(model), mast <- getMethodASTEclipse(m, model=model)) {
 		visit (mast) {
 			case Declaration d: nodeTypes += declarationNode(getName(d));
 			case Statement s: nodeTypes += statementNode(getName(s));
-			case Expression e: nodeTypes += expressionNode(getName(e));
+			//case Expression e: nodeTypes += expressionNode(getName(e));
 		};
 	}
 	return nodeTypes;
@@ -78,7 +86,7 @@ private tuple[int, NodeCount, NodeCounts] computeNodeCountsRecursively(value n, 
 	    	switch (n) {
 		    	case Declaration d: nt = declarationNode(getName(d));
 				case Statement s: nt = statementNode(getName(s));
-				case Expression e: nt = expressionNode(getName(e));
+				//case Expression e: nt = expressionNode(getName(e));
 	    	}
 			 if (nt?) {
 			 	c += 1;
