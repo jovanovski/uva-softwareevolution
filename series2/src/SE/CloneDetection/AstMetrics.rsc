@@ -61,26 +61,19 @@ private tuple[int, NodeCount, NodeCounts] computeNodeCountsRecursively(value n, 
     nc = ();
     NodeCounts ncs = {};
 	switch (n) {
-	    case list[node] xs: {
+	    case list[value] xs: {	    	
 	    	for (x <- xs) {
 				<xc,xnc,xncs> = computeNodeCountsRecursively(x, minT);
 				c += xc;
 				nc = mergeNodeCounts(nc,xnc);
 				ncs += xncs;
 			}
-			
-			// add combinations of sequences
-			//for ([*_,*S,*_] <- xrs) {
-			//	cc = (0| it + x| )
-			//}
 	    }
-	    case node n: {	    
-	    	for (x <- getChildren(n)) {
-	    		<xc,xnc,xncs> = computeNodeCountsRecursively(x, minT);
-			    c += xc;
-			    nc = mergeNodeCounts(nc,xnc);
-			    ncs += xncs;
-	    	}		    
+	    case node n: {
+    		<xc,xnc,xncs> = computeNodeCountsRecursively(getChildren(n), minT);    
+		    c += xc;
+		    nc = mergeNodeCounts(nc,xnc);
+		    ncs += xncs;
 			NodeType nt;
 	    	switch (n) {
 		    	case Declaration d: nt = declarationNode(getName(d));
