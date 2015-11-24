@@ -16,10 +16,9 @@ data NodeType
 
 alias VectorTemplate = list[NodeType];
 alias Vector = list[int];
-alias Vectors = rel[Vector,Maybe[loc]];
-
+alias Vectors = rel[Vector,list[loc]];
 alias NodeCount = map[NodeType, int];
-alias NodeCounts = rel[NodeCount,Maybe[loc]];
+alias NodeCounts = rel[NodeCount,list[loc]];
 
 public set[NodeType] getNodeTypes(M3 model) {
 	set[NodeType] nodeTypes = {};
@@ -55,46 +54,45 @@ public NodeCount mergeNodeCounts(NodeCount nc1, NodeCount nc2) {
 	return nc1;
 }
 
+anno loc node@src;
+
 private tuple[int, NodeCount, NodeCounts] computeNodeCountsRecursively(value n, int minT) {
     c = 0;
     nc = ();
     NodeCounts ncs = {};
 	switch (n) {
-	    case list[value] xs: {
+	    case list[node] xs: {
 	    	for (x <- xs) {
 				<xc,xnc,xncs> = computeNodeCountsRecursively(x, minT);
 				c += xc;
 				nc = mergeNodeCounts(nc,xnc);
 				ncs += xncs;
 			}
+			
+			// add combinations of sequences
+			//for ([*_,*S,*_] <- xrs) {
+			//	cc = (0| it + x| )
+			//}
 	    }
-	    case node n: {
-		    <xc,xnc,xncs> = computeNodeCountsRecursively(getChildren(n), minT);
-		    c += xc;
-		    nc = mergeNodeCounts(nc,xnc);
-		    ncs += xncs;
+	    case node n: {	    
+	    	for (x <- getChildren(n)) {
+	    		<xc,xnc,xncs> = computeNodeCountsRecursively(x, minT);
+			    c += xc;
+			    nc = mergeNodeCounts(nc,xnc);
+			    ncs += xncs;
+	    	}		    
 			NodeType nt;
-			loc l;
 	    	switch (n) {
-		    	case Declaration d: {
-					nt = declarationNode(getName(d));
-					l = ("src" in getAnnotations(d) ? just(d@src) : nothing());
-				}
-				case Statement s: {
-					nt = statementNode(getName(s));
-					l = ("src" in getAnnotations(s) ? just(s@src) : nothing());
-				}
-				case Expression e: {
-					nt = expressionNode(getName(e));
-					l = ("src" in getAnnotations(e) ? just(e@src) : nothing());
-				}
+		    	case Declaration d: nt = declarationNode(getName(d));
+				case Statement s: nt = statementNode(getName(s));
+				case Expression e: nt = expressionNode(getName(e));
 	    	}
 			 if (nt?) {
 			 	c += 1;
 			 	nc[nt] = nt in nc ? nc[nt] + 1 : 1;			 	
 				if (c >= minT) {
-					ncs += <nc,l>;
-				}				
+					ncs += <nc, "src" in getAnnotations(n) ? [n@src] : []>;
+				}
 			}
 	    } 
 	}
