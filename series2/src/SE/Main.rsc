@@ -5,19 +5,18 @@ import lang::java::m3::Core;
 import lang::java::m3::AST;
 import List;
 
-public list[Statement] listStatements(\method(_, _, _, _, Statement impl)) = listStatements(impl);
-public list[Statement] listStatements(\constructor(_, _, _, Statement impl)) = listStatements(impl);
-
-private list[Statement] listStatements(Statement s) {
-	sts = [];
-	top-down visit(s) {
-		case Statement s1: if (s != s1) sts += replaceNestedStatements(s1);	
-	}
-	return sts;
+public void detectType1(M3 model) {
+	iprintln("TODO");
 }
 
-private Statement replaceNestedStatements(Statement s) {
-	return top-down visit(s) {
-		case Statement s1: if (s != s1) return \empty();
-	}
+public void detectType2(M3 model) {
+	iprintln("TODO");
+}
+
+public void detectType3(M3 model) {
+	iprintln("TODO");
+}
+
+public void detectType4(M3 model) {
+	iprintln("TODO");
 }
