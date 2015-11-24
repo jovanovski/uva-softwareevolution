@@ -16,9 +16,9 @@ data NodeType
 
 alias VectorTemplate = list[NodeType];
 alias Vector = list[int];
-alias Vectors = rel[Vector,list[loc]];
+alias Vectors = rel[Vector,loc];
 alias NodeCount = map[NodeType, int];
-alias NodeCounts = rel[NodeCount,list[loc]];
+alias NodeCounts = rel[NodeCount,loc];
 
 public set[NodeType] getNodeTypes(M3 model) {
 	set[NodeType] nodeTypes = {};
@@ -83,8 +83,8 @@ private tuple[int, NodeCount, NodeCounts] computeNodeCountsRecursively(value n, 
 			 if (nt?) {
 			 	c += 1;
 			 	nc[nt] = nt in nc ? nc[nt] + 1 : 1;			 	
-				if (c >= minT) {
-					ncs += <nc, "src" in getAnnotations(n) ? [n@src] : []>;
+				if (c >= minT && "src" in getAnnotations(n)) {
+					ncs += <nc, n@src>;
 				}
 			}
 	    } 
