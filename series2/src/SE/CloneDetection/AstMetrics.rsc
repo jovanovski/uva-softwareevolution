@@ -30,35 +30,39 @@ public set[NodeType] getNodeTypes(M3 model) {
 	return nodeTypes;
 }
 
-public Vectors computeVectors(M3 model) {
+public Vectors computeVectors(M3 model, int minT=20) {
 	nodeTypes = getNodeTypes(model);
 	VectorTemplate template = sort(nodeTypes);
 	Vectors vs = {};
 	for (m <- methods(model), node mast <- getMethodASTEclipse(m, model=model)) {
-		<_,mvs> = computeVectorsRecursively(mast, template);
+		<_,_,mvs> = computeVectorsRecursively(mast, template,minT);
 		vs += mvs;
 	}
 	return vs;
 }
 
 public Vector emptyVector(VectorTemplate template) = [0 | _ <- template];
-public Vector mergeVectors(Vector v1, Vector v2) = [c1 + c2 | <c1,c2> <- zip(v1,v2)];
+public Vector mergeVectors(int templateSize, Vector v1, Vector v2) = [v1[i] + v2[i] | i <- [0..(templateSize)]];
 
-private tuple[Vector, Vectors] computeVectorsRecursively(value n, VectorTemplate template) {
+private tuple[int, Vector, Vectors] computeVectorsRecursively(value n, VectorTemplate template, int minT) {
+    s = size(template);
+    c = 0;
     v = emptyVector(template);
     Vectors vs = {};
 	switch (n) {
-	    case list[value] cs: {
-	    	for (c <- cs) {		
-				<cv,cvs> = computeVectorsRecursively(c, template);
-				v = mergeVectors(v,cv);
-				vs += cvs;
+	    case list[value] xs: {
+	    	for (x <- xs) {
+				<xc,xv,xvs> = computeVectorsRecursively(x, template, minT);
+				c += xc;
+				v = mergeVectors(s, v,xv);
+				vs += xvs;
 			}
 	    }
 	    case node n: {
-		    <cv,cvs> = computeVectorsRecursively(getChildren(n), template);
-		    v = mergeVectors(v,cv);
-		    vs += cvs;
+		    <xc,xv,xvs> = computeVectorsRecursively(getChildren(n), template, minT);
+		    c += xc;
+		    v = mergeVectors(s, v,xv);
+		    vs += xvs;
 			NodeType nt;
 			loc l;
 	    	switch (n) {
@@ -76,11 +80,14 @@ private tuple[Vector, Vectors] computeVectorsRecursively(value n, VectorTemplate
 				}
 	    	}
 			 if (nt?) {
+			 	c += 1;
 				i = indexOf(template, nt);
 				v[i] = v[i] + 1;
-				vs += <v,l>;
-			}  	
+				if (c >= minT) {
+					vs += <v,l>;
+				}				
+			}
 	    } 
 	}
-	return <v, vs>;
+	return <c, v, vs>;
 }
