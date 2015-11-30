@@ -57,61 +57,6 @@ public NodeCounts computeNodeCounts(M3 model) {
 	return ncs;
 }
 
-public NodeCount mergeNodeCounts(NodeCount nc1, NodeCount nc2) {
-	for (i <- nc2) {
-		nc1[i] = i in nc1 ? nc1[i] + nc2[i] : nc2[i];
-	}
-	return nc1;
-}
-
-public set[list[&T]] getMinSeqs(list[&T] xs, bool (list[&T]) match) {
-	rs = {};
-	l = size(xs);
-	for (i <- [0..l]) {
-		if (i < l-1) {
-			for (j <- [i+2..l+1]) {
-				ys = slice(xs, i, j - i);
-				if (match(ys)) {
-					rs += ys;
-					break;
-				}
-			}
-		}
-		if (i > 1) {
-			for (j <- [i-2..-1]) {
-				ys = slice(xs,j,i-j);
-				if (match(ys)) {
-					rs += ys;
-					break;
-				}
-			}
-		}
-	}
-	return rs;
-}
-
-private bool subSeqsMatchIsEmpty(list[int] T, bool (list[int]) match) {
-	return isEmpty({1 | [*_,*U,*_] := T, match(U)});
-}
-
-public test bool propGetMinSeqsIsMinimal(list[int] xs, int sm) {
-	match = bool (list[int] ys) {return sum([0]+ys) > sm;};
-	seqs = getMinSeqs(xs, match);
-	// all possile sequences in xs either:
-	// 1) do not pass match 
-	// 2) are in seqs and have no subseqs in seqs
-	// 3) have a subseq in seqs 
-	return (
-		true 
-		| it && (
-			!match(T) 
-			|| T in seqs && subSeqsMatchIsEmpty(T,match)
-			|| !subSeqsMatchIsEmpty(T,match)
-		)
-		| [*_,*T,*_] := xs
-	); 
-}
-
 private tuple[int, NodeCount, NodeCounts] computeNodeCountsRecursively(value n, int minS=6) {
     c = 0;
     nc = ();
@@ -168,17 +113,64 @@ private tuple[int, NodeCount, NodeCounts] computeNodeCountsRecursively(value n, 
 	return <c, nc, ncs>;
 }
 
+public NodeCount mergeNodeCounts(NodeCount nc1, NodeCount nc2) {
+	for (i <- nc2) {
+		nc1[i] = i in nc1 ? nc1[i] + nc2[i] : nc2[i];
+	}
+	return nc1;
+}
+
+public set[list[&T]] getMinSeqs(list[&T] xs, bool (list[&T]) match) {
+	rs = {};
+	l = size(xs);
+	for (i <- [0..l]) {
+		if (i < l-1) {
+			for (j <- [i+2..l+1]) {
+				ys = slice(xs, i, j - i);
+				if (match(ys)) {
+					rs += ys;
+					break;
+				}
+			}
+		}
+		if (i > 1) {
+			for (j <- [i-2..-1]) {
+				ys = slice(xs,j,i-j);
+				if (match(ys)) {
+					rs += ys;
+					break;
+				}
+			}
+		}
+	}
+	return rs;
+}
+
+private bool subSeqsMatchIsEmpty(list[int] T, bool (list[int]) match) {
+	return isEmpty({1 | [*_,*U,*_] := T, match(U)});
+}
+
+public test bool propGetMinSeqsIsMinimal(list[int] xs, int sm) {
+	match = bool (list[int] ys) {return sum([0]+ys) > sm;};
+	seqs = getMinSeqs(xs, match);
+	// all possile sequences in xs either:
+	// 1) do not pass match 
+	// 2) are in seqs and have no subseqs in seqs
+	// 3) have a subseq in seqs 
+	return (
+		true 
+		| it && (
+			!match(T) 
+			|| T in seqs && subSeqsMatchIsEmpty(T,match)
+			|| !subSeqsMatchIsEmpty(T,match)
+		)
+		| [*_,*T,*_] := xs
+	); 
+}
+
 private NodeCount addNodeType(NodeCount nc, NodeType nt) {
 	nc[nt] = nt in nc ? nc[nt] + 1 : 1;
 	return nc;
-}
-
-public list[int] getsllength(M3 model) {
-	return for (m <- methods(model), mast <- getMethodASTEclipse(m, model=model)) {
-		visit(mast) {
-			case list[Statement] l: append size(l);
-		}
-	}	
 }
 
 public int hammingDistance(int s, Vector v1, Vector v2) {
