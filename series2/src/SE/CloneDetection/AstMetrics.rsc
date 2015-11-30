@@ -7,7 +7,7 @@ import Set;
 import Node;
 import List;
 import IO;
-import util::Maybe;
+import util::Math;
 
 data NodeType
 	= declarationNode(str name)
@@ -16,9 +16,11 @@ data NodeType
 
 alias VectorTemplate = list[NodeType];
 alias Vector = list[int];
-alias Vectors = rel[Vector,loc];
+alias Vectors = rel[Vector,list[loc]];
 alias NodeCount = map[NodeType, int];
-alias NodeCounts = rel[NodeCount,loc];
+alias NodeCounts = rel[NodeCount,list[loc]];
+
+anno loc node@src;
 
 public map[Vector,set[loc]] groupVectors(Vectors vs) {
 	map[Vector,set[loc]] vsm = ();
@@ -34,22 +36,22 @@ public set[NodeType] getNodeTypes(M3 model) {
 		visit (mast) {
 			case Declaration d: nodeTypes += declarationNode(getName(d));
 			case Statement s: nodeTypes += statementNode(getName(s));
-			//case Expression e: nodeTypes += expressionNode(getName(e));
+			case Expression e: nodeTypes += expressionNode(getName(e));
 		};
 	}
 	return nodeTypes;
 }
 
-public Vectors computeVectors(M3 model, int minT=20) {
+public Vectors computeVectors(M3 model) {
 	nodeTypes = getNodeTypes(model);
 	list[NodeType] template = sort(nodeTypes);	
-	return {<[nt in nc ? nc[nt] : 0 | nt <- template],l> | <nc,l> <- computeNodeCounts(model,minT=minT)};
+	return {<[nt in nc ? nc[nt] : 0 | nt <- template],l> | <nc,l> <- computeNodeCounts(model)};
 }
 
-public NodeCounts computeNodeCounts(M3 model, int minT=20) {
+public NodeCounts computeNodeCounts(M3 model) {
 	NodeCounts ncs = {};
 	for (m <- methods(model), node mast <- getMethodASTEclipse(m, model=model)) {
-		<_,_,mncs> = computeNodeCountsRecursively(mast,minT);
+		<_,_,mncs> = computeNodeCountsRecursively(mast);
 		ncs += mncs;
 	}
 	return ncs;
@@ -62,40 +64,128 @@ public NodeCount mergeNodeCounts(NodeCount nc1, NodeCount nc2) {
 	return nc1;
 }
 
-anno loc node@src;
+public set[list[&T]] getMinSeqs(list[&T] xs, bool (list[&T]) match) {
+	rs = {};
+	l = size(xs);
+	for (i <- [0..l]) {
+		if (i < l-1) {
+			for (j <- [i+2..l+1]) {
+				ys = slice(xs, i, j - i);
+				if (match(ys)) {
+					rs += ys;
+					break;
+				}
+			}
+		}
+		if (i > 1) {
+			for (j <- [i-2..-1]) {
+				ys = slice(xs,j,i-j);
+				if (match(ys)) {
+					rs += ys;
+					break;
+				}
+			}
+		}
+	}
+	return rs;
+}
 
-private tuple[int, NodeCount, NodeCounts] computeNodeCountsRecursively(value n, int minT) {
+private bool subSeqsMatchIsEmpty(list[int] T, bool (list[int]) match) {
+	return isEmpty({1 | [*_,*U,*_] := T, match(U)});
+}
+
+public test bool propGetMinSeqsIsMinimal(list[int] xs, int sm) {
+	match = bool (list[int] ys) {return sum([0]+ys) > sm;};
+	seqs = getMinSeqs(xs, match);
+	// all possile sequences in xs either:
+	// 1) do not pass match 
+	// 2) are in seqs and have no subseqs in seqs
+	// 3) have a subseq in seqs 
+	return (
+		true 
+		| it && (
+			!match(T) 
+			|| T in seqs && subSeqsMatchIsEmpty(T,match)
+			|| !subSeqsMatchIsEmpty(T,match)
+		)
+		| [*_,*T,*_] := xs
+	); 
+}
+
+private tuple[int, NodeCount, NodeCounts] computeNodeCountsRecursively(value n, int minS=6) {
     c = 0;
     nc = ();
     NodeCounts ncs = {};
 	switch (n) {
+		case list[Statement] xs: {
+			xrs = [<computeNodeCountsRecursively(x,minS=minS), x@src> | x <- xs];
+			for (<<xc,xnc,xncs>,_> <- xrs) {
+				c += xc;
+				nc = mergeNodeCounts(nc,xnc);
+				ncs += xncs;
+			}	
+			for(ys <- getMinSeqs(xrs, bool (lrel[tuple[int,NodeCount,NodeCounts],loc] ys) {
+				return (0 | it + yc | <<yc,_,_>,_> <- ys) >= minS;
+			})) {
+				<<mc,mnc,mncs>,ml> = head(ys);
+				mls = [ml];
+				for (<<xc,xnc,xncs>,xl> <- tail(ys)) {
+					xc += mc;
+					mnc = mergeNodeCounts(mnc,xnc);
+					mncs += xncs;
+					mls += xl;
+				}
+				ncs += <nc, mls>;
+			}
+		}
 	    case list[value] xs: {	    	
-	    	for (x <- xs) {
-				<xc,xnc,xncs> = computeNodeCountsRecursively(x, minT);
+			xrs = [computeNodeCountsRecursively(x,minS=minS) | x <- xs];
+			for (<xc,xnc,xncs> <- xrs) {
 				c += xc;
 				nc = mergeNodeCounts(nc,xnc);
 				ncs += xncs;
 			}
 	    }
 	    case node n: {
-    		<xc,xnc,xncs> = computeNodeCountsRecursively(getChildren(n), minT);    
-		    c += xc;
-		    nc = mergeNodeCounts(nc,xnc);
-		    ncs += xncs;
+	    	<dc,dnc,dncs> = computeNodeCountsRecursively(getChildren(n),minS=minS);
+	    	c += dc;
+	    	nc = mergeNodeCounts(nc,dnc);
+	    	ncs += dncs;
 			NodeType nt;
 	    	switch (n) {
-		    	case Declaration d: nt = declarationNode(getName(d));
-				case Statement s: nt = statementNode(getName(s));
-				//case Expression e: nt = expressionNode(getName(e));
-	    	}
-			 if (nt?) {
-			 	c += 1;
-			 	nc[nt] = nt in nc ? nc[nt] + 1 : 1;			 	
-				if (c >= minT && "src" in getAnnotations(n)) {
-					ncs += <nc, n@src>;
+		    	case Declaration d: nc = addNodeType(nc, declarationNode(getName(d)));
+				case Statement s: nt = {
+					nc = addNodeType(nc, statementNode(getName(s)));
+					c += 1;
+					if (c >= minS) {
+						ncs += {<nc, [n@src]>};
+					}
 				}
-			}
+				case Expression e: nc = addNodeType(nc, expressionNode(getName(e)));
+	    	}
 	    } 
 	}
 	return <c, nc, ncs>;
 }
+
+private NodeCount addNodeType(NodeCount nc, NodeType nt) {
+	nc[nt] = nt in nc ? nc[nt] + 1 : 1;
+	return nc;
+}
+
+public list[int] getsllength(M3 model) {
+	return for (m <- methods(model), mast <- getMethodASTEclipse(m, model=model)) {
+		visit(mast) {
+			case list[Statement] l: append size(l);
+		}
+	}	
+}
+
+public int hammingDistance(int s, Vector v1, Vector v2) {
+	return (0 | it + abs(v1[i] - v2[i]) | i <- [0..s]);
+}
+
+public real euclideanDistance(int s, Vector v1, Vector v2) {
+	return sqrt((0 | it + pow(v1[i] - v2[i],2) | i <- [0..s]));
+}
+
