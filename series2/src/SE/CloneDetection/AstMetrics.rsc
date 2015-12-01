@@ -13,12 +13,12 @@ data NodeType
 	= declarationNode(str name)
 	| statementNode(str name)
 	| expressionNode(str name);
-
+	
 alias VectorTemplate = list[NodeType];
 alias Vector = list[int];
-alias Vectors = rel[Vector,list[loc]];
+alias Vectors = rel[Vector,list[node]];
 alias NodeCount = map[NodeType, int];
-alias NodeCounts = rel[NodeCount,list[loc]];
+alias NodeCounts = rel[NodeCount,list[node]];
 
 anno loc node@src;
 
@@ -30,57 +30,66 @@ public map[Vector,set[loc]] groupVectors(Vectors vs) {
 	return vsm;
 }
 
+public Vectors computeVectors(M3 model, int minS=6) = computeVectors(model, getVectorTemplate(model), minS=minS);
+public Vectors computeVectors(M3 model, VectorTemplate template, int minS=6) {
+	return computeVectors([getMethodASTEclipse(meth,model=model) | meth <- methods(model)], template, minS=minS);
+}
+public Vectors computeVectors(list[node] ns, int minS=6) = computeVectors(ns, getVectorTemplate(ns), minS=minS);
+public Vectors computeVectors(list[node] ns, VectorTemplate template, int minS=6) {
+	return ({} | it + computeVectors(n, template,minS=minS) | n <- ns);
+}
+public Vectors computeVectors(node n, int minS=6) = computeVectors(n, getVectorTemplate(ns), minS=minS);
+public Vectors computeVectors(node n, VectorTemplate template, int minS=6) {
+	<_,_,ncs> = computeNodeCountsRecursively(n,minS=minS);
+	return {<[nt in nc ? nc[nt] : 0 | nt <- template],n2> | <nc,n2> <- ncs};
+}
+private VectorTemplate checkVectorTemplate(value v, VectorTemplate template) = template == [] ? getVectorTemplate(v) : template;
+
+public VectorTemplate getVectorTemplate(value v) = sort(getNodeTypes(v));
 public set[NodeType] getNodeTypes(M3 model) {
 	set[NodeType] nodeTypes = {};
-	for (m <- methods(model), mast <- getMethodASTEclipse(m, model=model)) {
-		visit (mast) {
-			case Declaration d: nodeTypes += declarationNode(getName(d));
-			case Statement s: nodeTypes += statementNode(getName(s));
-			case Expression e: nodeTypes += expressionNode(getName(e));
-		};
+	for (m <- methods(model), n <- getMethodASTEclipse(m, model=model)) {
+		nodeTypes += getNodeTypes(n);
 	}
 	return nodeTypes;
 }
-
-public Vectors computeVectors(M3 model) {
-	nodeTypes = getNodeTypes(model);
-	list[NodeType] template = sort(nodeTypes);	
-	return {<[nt in nc ? nc[nt] : 0 | nt <- template],l> | <nc,l> <- computeNodeCounts(model)};
+public set[NodeType] getNodeTypes(value v) {
+	set[NodeType] nodeTypes = {};
+	visit (v) {
+		case Declaration d: nodeTypes += declarationNode(getName(d));
+		case Statement s: nodeTypes += statementNode(getName(s));
+		case Expression e: nodeTypes += expressionNode(getName(e));
+	};
+	return nodeTypes;
 }
 
-public NodeCounts computeNodeCounts(M3 model) {
-	NodeCounts ncs = {};
-	for (m <- methods(model), node mast <- getMethodASTEclipse(m, model=model)) {
-		<_,_,mncs> = computeNodeCountsRecursively(mast);
-		ncs += mncs;
-	}
-	return ncs;
-}
-
-private tuple[int, NodeCount, NodeCounts] computeNodeCountsRecursively(value n, int minS=6) {
+public tuple[int, NodeCount, NodeCounts] computeNodeCountsRecursively(value n, int minS=6) {
     c = 0;
     nc = ();
     NodeCounts ncs = {};
 	switch (n) {
 		case list[Statement] xs: {
-			xrs = [<computeNodeCountsRecursively(x,minS=minS), x@src> | x <- xs];
+			xrs = [<computeNodeCountsRecursively(x,minS=minS), x> | x <- xs];
 			for (<<xc,xnc,xncs>,_> <- xrs) {
 				c += xc;
 				nc = mergeNodeCounts(nc,xnc);
 				ncs += xncs;
 			}	
-			for(ys <- getMinSeqs(xrs, bool (lrel[tuple[int,NodeCount,NodeCounts],loc] ys) {
-				return (0 | it + yc | <<yc,_,_>,_> <- ys) >= minS;
+			for(ys <- getMinSeqs(xrs, bool (lrel[tuple[int,NodeCount,NodeCounts],node] zs) {
+				return (0 | it + zc | <<zc,_,_>,_> <- zs) >= minS;
 			})) {
+				mc = 0;
+				mnc = ();
+				NodeCounts mncs = {};
 				<<mc,mnc,mncs>,ml> = head(ys);
 				mls = [ml];
 				for (<<xc,xnc,xncs>,xl> <- tail(ys)) {
-					xc += mc;
+					mc += xc;
 					mnc = mergeNodeCounts(mnc,xnc);
 					mncs += xncs;
-					mls += xl;
+					mls += [xl];
 				}
-				ncs += <nc, mls>;
+				ncs += <mnc, mls>;
 			}
 		}
 	    case list[value] xs: {	    	
@@ -103,7 +112,7 @@ private tuple[int, NodeCount, NodeCounts] computeNodeCountsRecursively(value n, 
 					nc = addNodeType(nc, statementNode(getName(s)));
 					c += 1;
 					if (c >= minS) {
-						ncs += {<nc, [n@src]>};
+						ncs += {<nc, [n]>};
 					}
 				}
 				case Expression e: nc = addNodeType(nc, expressionNode(getName(e)));
@@ -112,6 +121,7 @@ private tuple[int, NodeCount, NodeCounts] computeNodeCountsRecursively(value n, 
 	}
 	return <c, nc, ncs>;
 }
+
 
 public NodeCount mergeNodeCounts(NodeCount nc1, NodeCount nc2) {
 	for (i <- nc2) {
@@ -150,6 +160,77 @@ private bool subSeqsMatchIsEmpty(list[int] T, bool (list[int]) match) {
 	return isEmpty({1 | [*_,*U,*_] := T, match(U)});
 }
 
+
+private NodeCount addNodeType(NodeCount nc, NodeType nt) {
+	nc[nt] = nt in nc ? nc[nt] + 1 : 1;
+	return nc;
+}
+
+public int hammingDistance(int s, Vector v1, Vector v2) {
+	return (0 | it + abs(v1[i] - v2[i]) | i <- [0..s]);
+}
+
+public real euclideanDistance(int s, Vector v1, Vector v2) {
+	return sqrt((0 | it + pow(v1[i] - v2[i],2) | i <- [0..s]));
+}
+
+public map[value,value] mytest(Vectors vs) {
+	ms = ();
+	for (<v,ls> <- vs) {
+		ms[v] = v in ms ? ms[v] + {ls} : {ls};
+	}
+	iprintln(ms);
+	return ms;
+}
+
+public test bool propVectorSumEqualsToNumberOfRelevantNodes(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl) {
+	m = \method(\return,name, parameters, exceptions, impl);
+	template = getVectorTemplate(m);
+	vs = computeVectors(m, template);
+	for (<v,ns> <- vs) {
+		c = countRelevantNodes(ns);
+	}
+	return true;
+}
+
+public test bool propMergedNodeCountsSumIsEqual(NodeCount nc1, NodeCount nc2) {
+	mnc = mergeNodeCounts(nc1, nc2);
+	return sumNodeCount(mnc) == (sumNodeCount(nc1) + sumNodeCount(nc2));
+}
+private int sumNodeCount(NodeCount nc) = (0 | it + nc[nt] | nt <- nc);
+
+public test bool propNodeCountSumEqualsToNumberOfRelevantNodes(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl) {
+	m = \method(\return,name, parameters, exceptions, impl);
+	<c,nc,ncs> = computeNodeCountsRecursively(m,minS=2);
+	if (c != countStatements(m)) {
+		return false;
+	}
+	snc = sumNodeCount(nc);
+	sns = countRelevantNodes(m);
+	if (snc != sns) {
+		return false;
+	}
+	for (<xnc,xns> <- ncs) {
+		xsnc = sumNodeCount(xnc);
+		xsns = countRelevantNodes(xns);
+		if (xsnc != xsns) {
+			return false;
+		}
+	}
+	return true;
+}
+private int countStatements(node n) = (0 | it + 1 | /\Statement s <- n);
+private int countRelevantNodes(list[node] ns) = (0 | it + countRelevantNodes(n) | n <- ns);
+private int countRelevantNodes(node n) {
+	c = 0;
+	visit(n) {
+		case Declaration _: c+=1;
+		case Statement _: c+=1;
+		case Expression _: c+=1;
+	}
+	return c;
+}
+
 public test bool propGetMinSeqsIsMinimal(list[int] xs, int sm) {
 	match = bool (list[int] ys) {return sum([0]+ys) > sm;};
 	seqs = getMinSeqs(xs, match);
@@ -167,17 +248,3 @@ public test bool propGetMinSeqsIsMinimal(list[int] xs, int sm) {
 		| [*_,*T,*_] := xs
 	); 
 }
-
-private NodeCount addNodeType(NodeCount nc, NodeType nt) {
-	nc[nt] = nt in nc ? nc[nt] + 1 : 1;
-	return nc;
-}
-
-public int hammingDistance(int s, Vector v1, Vector v2) {
-	return (0 | it + abs(v1[i] - v2[i]) | i <- [0..s]);
-}
-
-public real euclideanDistance(int s, Vector v1, Vector v2) {
-	return sqrt((0 | it + pow(v1[i] - v2[i],2) | i <- [0..s]));
-}
-
