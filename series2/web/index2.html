@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+text {
+  font: 10px sans-serif;
+  cursor: pointer;
+}
+
+circle{
+  cursor: pointer;
+}
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+var map = [];
+
+var diameter = 960,
+    format = d3.format(",d"),
+    color = d3.scale.category20c();
+
+var bubble = d3.layout.pack()
+    .sort(null)
+    .size([diameter, diameter])
+    .padding(1.5);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", diameter)
+    .attr("height", diameter)
+    .attr("class", "bubble");
+
+d3.json("data/gendata.json", function(error, root) {
+  if (error) throw error;
+
+  var node = svg.selectAll(".node")
+      .data(bubble.nodes(classes(root))
+      .filter(function(d) { return !d.children; }))
+    .enter().append("g")
+      .attr("class", "node")
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+  node.append("title")
+      .text(function(d) { return d.className + ": " + format(d.value); });
+
+  node.append("circle")
+      .attr("r", function(d) { return d.r; })
+      .attr("file", function(d) { return d.packageName + d.className;})
+      .attr("class", "circle")
+      .style("fill", function(d) { return color(d.packageName); });
+      
+  node.append("text")
+      .attr("dy", ".3em")
+      .attr("file", function(d) { return d.packageName + d.className;})
+      .attr("class", "text")
+      .style("text-anchor", "middle")
+      .text(function(d) { return d.className.substring(0, d.r / 3); });
+
+  svg.selectAll(".circle, .text")
+        .on("mouseover", function (d) { 
+          svg.selectAll(".text").style("fill-opacity", "0.2");
+          svg.selectAll(".circle").style("fill-opacity", "0.2");
+          var conn = map[d.packageName + d.className].split(",");
+          conn.forEach(function(k, index, array){
+            svg.selectAll("[file=" + k + "]").style("fill-opacity", "1");
+            svg.selectAll("[file=" + k + "]").style("fill-opacity", "1");
+          
+          });
+          })
+        .on("mouseout", function (d) {
+          svg.selectAll(".text").style("fill-opacity", "1");
+          svg.selectAll(".circle").style("fill-opacity", "1");
+          
+        });
+});
+
+// Returns a flattened hierarchy containing all leaf nodes under the root.
+function classes(root) {
+  var classes = [];
+  var tmpclasses = [];
+
+  root.forEach(function(child) { 
+    if((child.imports).length>0){
+      child.imports.forEach(function(tmp){
+        if(tmpclasses[child.name] === undefined){
+          tmpclasses[child.name] = tmp.lines;
+        }
+        else{
+          tmpclasses[child.name] += tmp.lines;
+        }
+
+
+        var nname = (child.name).replace(/\//g, "");
+
+        if(map[nname] === undefined){
+          map[nname] = (tmp.file).replace(/\//g, "");
+        }
+        else{
+          map[nname] += "," + (tmp.file).replace(/\//g, "");
+        }
+      });
+    }
+    else{
+      var classname = child.name.split("/");
+      file = classname[classname.length-1];
+      var pkg = "";
+      for(i=0;i<classname.length-1;i++){
+        pkg += classname[i];
+      }
+      classes.push({packageName: pkg, className: file, value: 0});
+    }
+  });
+
+
+  
+  for(var k in tmpclasses){
+    var classname = k.split("/");
+    file = classname[classname.length-1];
+    var pkg = "";
+    for(i=0;i<classname.length-1;i++){
+      pkg += classname[i];
+    }
+    classes.push({packageName: pkg, className: file, value: tmpclasses[k]});
+  }
+  //recurse(null, root);
+  return {children: classes};
+}
+
+d3.select(self.frameElement).style("height", diameter + "px");
+
+</script>
