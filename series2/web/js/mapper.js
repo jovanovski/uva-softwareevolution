@@ -2,7 +2,7 @@
 //  CHORD MAPPER 
 //*******************************************************************
 function chordMpr (data) {
-  var mpr = {}, mmap = {}, n = 0,
+  var mpr = {}, mmap = {}, n = 0, mrel = {}, grel = {},
       matrix = [], filter, accessor;
 
   mpr.setFilter = function (fun) {
@@ -26,17 +26,30 @@ function chordMpr (data) {
     });
     return matrix;
   },
+  mpr.addConnection = function(a, b, lines){
+    mrel[a + "->" + b] = lines;
+    if(!grel[a]) {
+      grel[a] = lines;
+    }
+    else {
+      grel[a] = grel[a] + lines;
+    }
+  },
   mpr.getMap = function () {
     return mmap;
   },
+  mpr.getConnections = function () {
+    return mrel;
+  },
+  mpr.getRel = function () { return grel; },
   mpr.printMatrix = function () {
     _.each(matrix, function (elem) {
       console.log(elem);
     })
   },
-  mpr.addToMap = function (value, info) {
+  mpr.addToMap = function (value, lines, info) {
     if (!mmap[value]) {
-      mmap[value] = { name: value, id: n++, data: info }
+      mmap[value] = { name: value, id: n++, data: info, lines: lines}
     }
   },
   mpr.addValuesToMap = function (varName, info) {
@@ -45,6 +58,7 @@ function chordMpr (data) {
       if (!mmap[v]) {
         mmap[v] = { name: v, id: n++, data: info }
       }
+
     });
     return this;
   }
@@ -53,7 +67,7 @@ function chordMpr (data) {
 //*******************************************************************
 //  CHORD READER
 //*******************************************************************
-function chordRdr (matrix, mmap) {
+function chordRdr (matrix, mmap, mrel, grel) {
   return function (d) {
     var i,j,s,t,g,m = {};
     if (d.source) {
@@ -61,6 +75,7 @@ function chordRdr (matrix, mmap) {
       s = _.where(mmap, {id: i });
       t = _.where(mmap, {id: j });
       m.sname = s[0].name;
+      m.lines = mrel[s[0].name + "->" + t[0].name];
       m.sdata = d.source.value;
       m.svalue = +d.source.value;
       m.stotal = _.reduce(matrix[i], function (k, n) { return k + n }, 0);
@@ -72,6 +87,7 @@ function chordRdr (matrix, mmap) {
       g = _.where(mmap, {id: d.index });
       m.gname = g[0].name;
       m.gdata = g[0].data;
+      m.glines = g[0].lines;
       m.gvalue = d.value;
     }
     m.mtotal = _.reduce(matrix, function (m1, n1) { 

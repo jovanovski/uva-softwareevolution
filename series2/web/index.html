@@ -44,6 +44,8 @@
       //*******************************************************************
       //  CREATE MATRIX AND MAP
       //*******************************************************************
+      var svg;
+      var rdr;
       d3.json('data/gendata.json', function (error, data) {
         var mpr = chordMpr(data);
 
@@ -59,12 +61,18 @@
             var n = 0;
             _.each(recs, function (r) {
               _.each(r.imports, function (i) {
-                if (name(i) === b.name) n++;
+                if (name(i.file) === b.name) {
+
+                  mpr.addConnection(a.name, i.file, i.lines);
+                  n++;
+                }
               });
             });
             return n;
           });
-        drawChords(mpr.getMatrix(), mpr.getMap());
+        drawChords(mpr.getMatrix(), mpr.getMap(), mpr.getConnections(), mpr.getRel());
+        var grel = mpr.getRel();
+    
       });
 
       function name(name) {
@@ -73,7 +81,7 @@
       //*******************************************************************
       //  DRAW THE CHORD DIAGRAM
       //*******************************************************************
-      function drawChords (matrix, mmap) {
+      function drawChords (matrix, mmap, mrel, grel) {
         var w = 980, h = 800, r1 = h / 2, r0 = r1 - 100;
 
         var fill = d3.scale.ordinal()
@@ -88,7 +96,7 @@
             .innerRadius(r0)
             .outerRadius(r0 + 20);
 
-        var svg = d3.select("body").append("svg:svg")
+        svg = d3.select("body").append("svg:svg")
             .attr("width", w)
             .attr("height", h)
           .append("svg:g")
@@ -98,12 +106,12 @@
             svg.append("circle")
                 .attr("r", r0 + 20);
 
-        var rdr = chordRdr(matrix, mmap);
+        rdr = chordRdr(matrix, mmap, mrel, grel);
         chord.matrix(matrix);
 
         var g = svg.selectAll("g.group")
             .data(chord.groups())
-          .enter().append("svg:g")
+            .enter().append("svg:g")
             .attr("class", "group")
             .on("mouseover", mouseover)
             .on("mouseout", function (d) { d3.select("#tooltip").style("visibility", "hidden") });
@@ -118,6 +126,16 @@
             .attr("dy", ".35em")
             .style("font-family", "helvetica, arial, sans-serif")
             .style("font-size", "10px")
+            .attr("fill", function(d){ 
+              var num = grel[rdr(d).gname]; 
+              console.log(num);
+              if(num!==undefined) {
+                if(num <= 50) return "#000";
+                else if(num <= 200) return "#FF9D00";
+                else if (num > 200) return "#F00";
+              }
+              return "#000";
+            })
             .attr("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
             .attr("transform", function(d) {
               return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
@@ -146,20 +164,17 @@
             var p = d3.format(".1%"), q = d3.format(",.2r")
             return "Chord Info:<br/>"
               +  d.sname + " → " + d.tname
-              + ": " + q(d.svalue) + "<br/>"
+              + ": " + d.lines + " LOC<br/>"
               + p(d.svalue/d.stotal) + " of " + d.sname + "'s Total (" + q(d.stotal) + ")<br/>"
-              + p(d.svalue/d.mtotal) + " of Matrix Total (" + q(d.mtotal) + ")<br/>"
-              + "<br/>"
-              + d.tname + " → " + d.sname
-              + ": " + q(d.tvalue) + "<br/>"
-              + p(d.tvalue/d.ttotal) + " of " + d.tname + "'s Total (" + q(d.ttotal) + ")<br/>"
-              + p(d.tvalue/d.mtotal) + " of Matrix Total (" + q(d.mtotal) + ")";
+              + p(d.svalue/d.mtotal) + " of Matrix Total (" + q(d.mtotal) + ")<br/>";
           }
 
           function groupTip (d) {
             var p = d3.format(".1%"), q = d3.format(",.2r")
+            var num = "/";
+            if(grel[d.gname]!==undefined) num = ": " + grel[d.gname];
             return "Group Info:<br/>"
-                + d.gname + " : " + q(d.gvalue) + "<br/>"
+                + d.gname + num +"<br/>"
                 + p(d.gvalue/d.mtotal) + " of Matrix Total (" + q(d.mtotal) + ")"
           }
 
