@@ -17,14 +17,14 @@ circle{
 
 var map = [];
 
-var diameter = 960,
+var diameter = 860,
     format = d3.format(",d"),
     color = d3.scale.category20c();
 
 var bubble = d3.layout.pack()
     .sort(null)
     .size([diameter, diameter])
-    .padding(1.5);
+    .padding(1);
 
 var svg = d3.select("body").append("svg")
     .attr("width", diameter)
