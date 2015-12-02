@@ -3,11 +3,11 @@ module SE::AST::Transformation
 import IO;
 import Node;
 import List;
+import String;
+import util::Maybe;
 import lang::java::m3::AST;
 import lang::java::jdt::m3::Core;
 import lang::java::m3::Core;
-import IO;
-import util::Maybe;
 
 data AstNode
 	= \declarationNode(str name, int descendantCount, loc src)

@@ -1,0 +1,1 @@
+"%~dp0web\index.html"
