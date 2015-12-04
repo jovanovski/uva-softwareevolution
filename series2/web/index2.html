@@ -92,13 +92,22 @@ function classes(root) {
 
 
         var nname = (child.name).replace(/\//g, "");
+        var fname = (tmp.file).replace(/\//g, "");
 
         if(map[nname] === undefined){
-          map[nname] = (tmp.file).replace(/\//g, "");
+          map[nname] = fname;
         }
         else{
-          map[nname] += "," + (tmp.file).replace(/\//g, "");
+          map[nname] += "," + fname;
         }
+        if(map[fname] === undefined){
+          map[fname] = nname;
+        }
+        else{
+          map[fname] += "," + nname;
+        }
+
+
       });
     }
     else{
