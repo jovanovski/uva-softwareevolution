@@ -20,7 +20,8 @@ import SE::Type1::CodePrep;
 public lrel[tuple[loc, loc], int] detectType1(M3 model){
 	datetime startTime = now();
 	println("<now()> - Type1 detection started");
-	set[loc] units = classes(model);
+	//set[loc] units = classes(model);
+	set[loc] units = { m[0] | m <- model@containment, isCompilationUnit(m[0])};
 	list[lrel[loc, tuple[int, int], str]] lines = [];
 	map[loc, int] locSize = ();
 	int i = 0;
@@ -58,6 +59,8 @@ public lrel[tuple[loc, loc], int] duplicationInLines(list[lrel[loc, tuple[int, i
 	map[list[str], lrel[loc, tuple[int, int], str]] myMap = ();
 	set[tuple[loc,tuple[int, int],str]] dupLines = {};
 	map[tuple[loc, loc], int] paths = ();
+	map[loc, map[loc, list[tuple[tuple[int, int], tuple[int, int]]]]] cloneClasses = ();
+	tuple[tuple[int, int], tuple[int, int]] lastSaved;
 	for(lines6 <- lines){
 		list[str] linesNew = [lines6[0][2], lines6[1][2], lines6[2][2], lines6[3][2], lines6[4][2], lines6[5][2]];
 		if(linesNew in myMap){
@@ -76,6 +79,42 @@ public lrel[tuple[loc, loc], int] duplicationInLines(list[lrel[loc, tuple[int, i
 			dupLines += oldLines[3];
 			dupLines += oldLines[4];
 			dupLines += oldLines[5];
+			if(oldLines[0][0] in cloneClasses){
+				map[loc, list[tuple[tuple[int, int], tuple[int, int]]]] old = cloneClasses[oldLines[0][0]];
+				if(lines6[0][0] in old){
+					list[tuple[tuple[int, int], tuple[int, int]]] oldList = old[lines6[0][0]];
+					
+					tuple[tuple[int, int], tuple[int, int]] last = last(oldList);
+					//equal start
+					//start differ by 1
+					if(lastSaved[0][0] == oldLines[0][1][0] || lastSaved[0][0] + 1 == oldLines[0][1][0]){
+						oldList[size(oldList)-1] = <<last[0][0], oldLines[5][1][1]>, <last[1][0], lines6[5][1][1]>>;
+					}
+					//equal end
+					//end differ by 1
+					else{
+						oldList += <<oldLines[0][1][0], oldLines[5][1][1]>, <lines6[0][1][0], lines6[5][1][1]>>;
+					}
+					
+					lastSaved = <<oldLines[0][1][0], oldLines[5][1][1]>, <lines6[0][1][0], lines6[5][1][1]>>;
+					
+					
+					old[lines6[0][0]] = oldList;
+					cloneClasses[oldLines[0][0]] = old;
+				}
+				else{
+					old[lines6[0][0]] = [<<oldLines[0][1][0], oldLines[5][1][1]>, <lines6[0][1][0], lines6[5][1][1]>>];
+					lastSaved = <<oldLines[0][1][0], oldLines[5][1][1]>, <lines6[0][1][0], lines6[5][1][1]>>;
+				}
+			}
+			else{
+			
+				map[loc, list[tuple[tuple[int, int], tuple[int, int]]]] old = ();
+				old[lines6[0][0]] = [<<oldLines[0][1][0], oldLines[5][1][1]>, <lines6[0][1][0], lines6[5][1][1]>>];
+				cloneClasses[oldLines[0][0]] = old;
+				lastSaved = <<oldLines[0][1][0], oldLines[5][1][1]>, <lines6[0][1][0], lines6[5][1][1]>>;
+				
+			}
 			
 			if(<lines6[0][0], oldLines[0][0]> in paths){
 				paths[<lines6[0][0], oldLines[0][0]>] = paths[<lines6[0][0], oldLines[0][0]>] + 6;
@@ -114,6 +153,8 @@ public lrel[tuple[loc, loc], int] duplicationInLines(list[lrel[loc, tuple[int, i
 	//order by first loc, NEEDED FOR VISUALIZATION TO WORK LIKE THIS, else it needs a map
 	println("<now()> - Process ended");
 	println("<now() - startTime>");
+
+	writeFile(|project://uva-se-series2/web/data/mapdata.json|, cloneClasses);
 	return sort(toList(paths), bool(tuple[tuple[loc, loc], int] a, tuple[tuple[loc, loc], int] b){ return a[0][0] > b[0][0]; });
 }
 
