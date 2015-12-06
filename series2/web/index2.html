@@ -109,13 +109,6 @@ function classes(root) {
           tmpclasses[child.name] += tmp.lines;
         }
 
-        if(tmpclasses[tmp.file] === undefined){
-          tmpclasses[tmp.file] = tmp.lines;
-        }
-        else{
-          tmpclasses[tmp.file] += tmp.lines;
-        }
-
 
         var nname = (child.name).replace(/\//g, "");
         var fname = (tmp.file).replace(/\//g, "");
@@ -134,12 +127,7 @@ function classes(root) {
         else{
           map[nname] += "," + fname;
         }
-        if(map[fname] === undefined){
-          map[fname] = nname;
-        }
-        else{
-          map[fname] += "," + nname;
-        }
+        
 
 
       });

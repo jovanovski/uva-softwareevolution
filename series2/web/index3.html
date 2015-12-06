@@ -19,12 +19,13 @@ text {
   position: relative;
   float: left;
   overflow: hidden;
+  color: white;
 }
 
 .file2{
   height: 100%;
   width: 200px;
-  background-color: green;
+  background-color: #8bc34a;
   position: relative;
   margin-left: 50px;
   float: left;
@@ -61,6 +62,7 @@ text {
 <script>
 
 var links = [];
+var colors = [];
 
 $.ajax({  
   method: "GET",
@@ -80,21 +82,37 @@ $.ajax({
 });
 
 function doStuff(data){
-  $(".file1").html(data.name+$(".file1").html());
+  console.log(data);
+  var ar = data.name.split("/");
+  var arn = ar[ar.length-1];
+  $(".file1").html(arn+$(".file1").html());
   var old = "";
   var linkID = 0;
   var widthS = 50;
   $.each( data.imports, function( key, value ) {
     if(old!=value.file){
-      $(".scrollerIn").append("<div class='file2' file='"+value.file+"'>"+value.file+"</div>");
+
+      ar = value.file.split("/");
+      arn = ar[ar.length-1];
+      $(".scrollerIn").append("<div class='file2' file='"+value.file+"'>"+arn+"</div>");
       widthS += 250;
       $(".scrollerIn").css("width", (widthS)+"px");
       old = value.file;
     }
-    linkID++;
-    var color = getRandomColor();
-    addClone("main", value.startF, value.endF, data.size,linkID, color);
-    addClone(value.file, value.startT, value.endT, value.size,linkID, color);
+    var mapID = links[value.startF + "," + value.endF];
+
+    if(mapID == undefined){
+      linkID++;
+      links[value.startF + "," + value.endF] = linkID;
+      var color = getRandomColor();
+      colors[linkID] = color;
+      addClone("main", value.startF, value.endF, data.size, linkID, color);
+      addClone(value.file, value.startT, value.endT, value.size, linkID, color);
+    }
+    else{
+      //addClone("main", value.startF, value.endF, data.size, linkID, color);
+      addClone(value.file, value.startT, value.endT, value.size, links[value.startF + "," + value.endF], colors[links[value.startF + "," + value.endF]]);
+    }
   });
   setHandler();
 }

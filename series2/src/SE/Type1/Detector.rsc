@@ -138,6 +138,39 @@ public map[loc, map[loc, list[tuple[tuple[int, int], tuple[int, int]]]]] duplica
 			myMap[linesNew] = lines6;
 		}
 	}
+	
+	map[loc, map[loc, list[tuple[tuple[int, int], tuple[int, int]]]]] final = ();
+	for(m <- cloneClasses){
+		for(c <- cloneClasses[m]){
+			for(link <- cloneClasses[m][c]){
+				if(m in final){
+					if(c in final[m]){
+						final[m][c] += link;
+					}
+					else{
+						final[m][c] = [link];
+					}
+				}
+				else{
+					final[m] = ();
+					final[m][c] = [link];
+				}
+				
+				if(c in final){
+					if(m in final[c]){
+						final[c][m] += <link[1],link[0]>;
+					}
+					else{
+						final[c][m] = [<link[1], link[0]>];
+					}
+				}
+				else{
+					final[c] = ();
+					final[c][m] = [<link[1], link[0]>];
+				}
+			}	
+		}
+	}
 
 	/*
 	map[loc, int] perCUnit = ();
@@ -169,7 +202,8 @@ public map[loc, map[loc, list[tuple[tuple[int, int], tuple[int, int]]]]] duplica
 	//writeFile(|project://uva-se-series2/web/data/mapdata.json|, cloneClasses);
 	//return sort(toList(paths), bool(tuple[tuple[loc, loc], int] a, tuple[tuple[loc, loc], int] b){ return a[0][0] > b[0][0]; });
 	
-	return cloneClasses;
+	//return cloneClasses;
+	return final;
 }
 
 ////////////////////////
