@@ -34,6 +34,8 @@ public list[tuple[tuple[int, int], str]] prepCode2(loc unit, M3 model){
 	//Do the state machine thing
 	read = doStatePrep(read, strings);
 	
+	
+	
 	//Get all lines
 	list[str] init =  split("\n", read);
 	
@@ -68,8 +70,8 @@ public list[tuple[tuple[int, int], str]] prepCode2(loc unit, M3 model){
 			bool commenthere = false;
 			for(c <- lines){
 				
-				if((startsWith(c, "/ /") || startsWith(c, " / /")) && size(lines)==1){
-					// full line comment
+				if(((startsWith(c, "/ /") || startsWith(c, " / /")) && size(lines)==1) || ((startsWith(c, "/ *") || startsWith(c, " / *")) && (endsWith(c, "* /") || endsWith(c, "* / ")) && size(lines)==1)){
+					// full line comment, block or single
 					commenthere = true;
 				}
 				else if(startsWith(c," / *") || startsWith(c,"/ *")){
@@ -92,6 +94,13 @@ public list[tuple[tuple[int, int], str]] prepCode2(loc unit, M3 model){
 			i += 1;
 		}
 	}
+	
+	str out = "";
+	for(s <- res){
+		out+=s[1];
+		out+="\n";
+	}
+	
 	return res;
 }
 
@@ -161,7 +170,7 @@ public list[str] doNextLine(str read, loc file, list[str] strings){
 	return split("\n", read);
 }
 
-////////////
+////////////---------------------------------------------------
 
 public set[loc] getConnectedStuff(loc unit, rel[loc, loc] con){
 	set[loc] stuff = {unit};
@@ -244,6 +253,7 @@ public str getCleanCode(loc unit, rel[loc, loc] con, rel[loc, loc] documentation
 
 public list[str] prepCode(loc unit, M3 model){
 	str cleanCode = getCleanCode(unit, model@containment, model@documentation);
+	
 	return split("\n", replaceStrings(cleanCode, unit));
 }
 

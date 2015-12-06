@@ -12,7 +12,8 @@ circle{
 }
 </style>
 <body>
-<script src="http://d3js.org/d3.v3.min.js"></script>
+<div style="width:860px;height860px;margin:0 auto;0" class="svg"></div>
+<script src="http://d3js.org/d3.v3.js"></script>
 <script>
 
 var map = [];
@@ -26,18 +27,18 @@ var bubble = d3.layout.pack()
     .size([diameter, diameter])
     .padding(1);
 
-var svg = d3.select("body").append("svg")
+var svg = d3.select(".svg").append("svg")
     .attr("width", diameter)
     .attr("height", diameter)
     .attr("class", "bubble");
 
-d3.json("data/gendata.json", function(error, root) {
-  if (error) throw error;
-
+d3.json("data/gendatamin.json", function(error, root) {
+  if (error) "ERR";
+  console.log(classes(root));
   var node = svg.selectAll(".node")
       .data(bubble.nodes(classes(root))
       .filter(function(d) { return !d.children; }))
-    .enter().append("g")
+      .enter().append("g")
       .attr("class", "node")
       .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 
@@ -46,13 +47,21 @@ d3.json("data/gendata.json", function(error, root) {
 
   node.append("circle")
       .attr("r", function(d) { return d.r; })
-      .attr("file", function(d) { return d.packageName + d.className;})
+      .attr("file", function(d) { var file = d.packageName + d.className;
+          file = file.replace(/ /g, "");
+          file = file.replace(/:/g, "");
+          file = file.replace(/\_/g, "");
+          file = file.replace(/\./g, ""); return file;})
       .attr("class", "circle")
       .style("fill", function(d) { return color(d.packageName); });
       
   node.append("text")
       .attr("dy", ".3em")
-      .attr("file", function(d) { return d.packageName + d.className;})
+      .attr("file", function(d) { var file = d.packageName + d.className;
+          file = file.replace(/ /g, "");
+          file = file.replace(/:/g, "");
+          file = file.replace(/\_/g, "");
+          file = file.replace(/\./g, ""); return file;})
       .attr("class", "text")
       .style("text-anchor", "middle")
       .text(function(d) { return d.className.substring(0, d.r / 3); });
@@ -61,7 +70,13 @@ d3.json("data/gendata.json", function(error, root) {
         .on("mouseover", function (d) { 
           svg.selectAll(".text").style("fill-opacity", "0.2");
           svg.selectAll(".circle").style("fill-opacity", "0.2");
-          var conn = map[d.packageName + d.className].split(",");
+          var file = d.packageName + d.className;
+          file = file.replace(/ /g, "");
+          file = file.replace(/:/g, "");
+          file = file.replace(/\_/g, "");
+          file = file.replace(/\./g, "");
+
+          var conn = map[file].split(",");
           conn.forEach(function(k, index, array){
             svg.selectAll("[file=" + k + "]").style("fill-opacity", "1");
             svg.selectAll("[file=" + k + "]").style("fill-opacity", "1");
@@ -72,6 +87,10 @@ d3.json("data/gendata.json", function(error, root) {
           svg.selectAll(".text").style("fill-opacity", "1");
           svg.selectAll(".circle").style("fill-opacity", "1");
           
+        })
+        .on("click", function(d){
+            link = encodeURI(d.original);
+            window.location.href = "index3.html?file="+link;
         });
 });
 
@@ -90,9 +109,24 @@ function classes(root) {
           tmpclasses[child.name] += tmp.lines;
         }
 
+        if(tmpclasses[tmp.file] === undefined){
+          tmpclasses[tmp.file] = tmp.lines;
+        }
+        else{
+          tmpclasses[tmp.file] += tmp.lines;
+        }
+
 
         var nname = (child.name).replace(/\//g, "");
         var fname = (tmp.file).replace(/\//g, "");
+        nname = nname.replace(/\_/g, "");
+        fname = fname.replace(/\_/g, "");
+        nname = nname.replace(/\./g, "");
+        fname = fname.replace(/\./g, "");
+        nname = nname.replace(/ /g, "");
+        fname = fname.replace(/ /g, "");
+        nname = nname.replace(/:/g, "");
+        fname = fname.replace(/:/g, "");
 
         if(map[nname] === undefined){
           map[nname] = fname;
@@ -117,23 +151,34 @@ function classes(root) {
       for(i=0;i<classname.length-1;i++){
         pkg += classname[i];
       }
-      classes.push({packageName: pkg, className: file, value: 0});
+      classes.push({original: child.name, packageName: pkg, className: file, value: 0});
+
     }
+    
   });
 
-
-  
   for(var k in tmpclasses){
+
     var classname = k.split("/");
     file = classname[classname.length-1];
     var pkg = "";
     for(i=0;i<classname.length-1;i++){
       pkg += classname[i];
     }
-    classes.push({packageName: pkg, className: file, value: tmpclasses[k]});
+    classes.push({original: k, packageName: pkg, className: file, value: tmpclasses[k]});
+
   }
-  //recurse(null, root);
-  return {children: classes};
+
+  
+  var newClasses = [];
+
+  var le = 244;
+  if(classes.length<244) le = classes.length;
+  for(var i=0;i<le;i++){
+    newClasses[i]= classes[i];
+  }
+
+  return {children: newClasses};
 }
 
 d3.select(self.frameElement).style("height", diameter + "px");

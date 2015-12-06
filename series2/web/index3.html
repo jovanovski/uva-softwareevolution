@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="css/reset.css">
+<style>
+
+html, body{
+  height: 100%;
+  width: 100%;
+}
+
+text {
+  font: 10px sans-serif;
+}
+
+.file1{
+  height: 100%;
+  width: 200px;
+  background-color: #3f51b5;
+  position: relative;
+  float: left;
+  overflow: hidden;
+}
+
+.file2{
+  height: 100%;
+  width: 200px;
+  background-color: green;
+  position: relative;
+  margin-left: 50px;
+  float: left;
+  overflow: hidden;
+}
+
+.clone{
+  width: 100%;
+  background-color: red;
+  cursor: pointer;
+  opacity: 0.9;
+  border-bottom: 1px dashed white;
+  border-top: 1px dashed white;
+}
+
+.scroller, .scrollerIn{
+  height: 100%;
+  overflow: hidden;
+  float: left;
+}
+
+.scroller{
+  width: calc(100% - 200px);
+  float: right;
+}
+
+</style>
+<body>
+<div class="file1" file='main'></div>
+<div class="scroller">
+<div class="scrollerIn"></div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script>
+
+var links = [];
+
+$.ajax({  
+  method: "GET",
+  dataType: "json",
+  url: "data/gendata.json",
+  cache: false
+})
+.done(function( data ) {
+  var file = getParameterByName("file")
+  for(var i =0; i< data.length;i++){
+    if(data[i].name==file){
+      doStuff(data[i]);
+      return;
+    }
+  }
+  alert("File not found!");
+});
+
+function doStuff(data){
+  $(".file1").html(data.name+$(".file1").html());
+  var old = "";
+  var linkID = 0;
+  var widthS = 50;
+  $.each( data.imports, function( key, value ) {
+    if(old!=value.file){
+      $(".scrollerIn").append("<div class='file2' file='"+value.file+"'>"+value.file+"</div>");
+      widthS += 250;
+      $(".scrollerIn").css("width", (widthS)+"px");
+      old = value.file;
+    }
+    linkID++;
+    var color = getRandomColor();
+    addClone("main", value.startF, value.endF, data.size,linkID, color);
+    addClone(value.file, value.startT, value.endT, value.size,linkID, color);
+  });
+  setHandler();
+}
+
+var cloneNum = 0;
+function addClone(div, start, end, size, linkID, color){
+  var topP = ((start*1.0)/(size*1.0)) * 100;
+  var bottomP = ((end*1.0)/(size*1.0)) * 100;
+
+  var fHeight = $("[file='"+div+"']").height();
+  var marginC = cloneNum*10;
+  //cloneNum++;
+  $("[file='"+div+"']").append("<div class='clone' style='margin-left:"+marginC+"px; position:absolute; top: "+(fHeight/100 * topP)+"px; height:"+(bottomP-topP)+"%; background-color:"+color+"' title='"+start+", "+end+"' linkID='"+linkID+"'></div>");
+
+}
+
+function setHandler(){
+  $(".clone").hover(
+
+    function(){
+      $(".clone").css("opacity", "0.2");
+      $(".clone[linkID='"+$(this).attr('linkID')+"']").css("opacity", "1");
+  }, function() {
+      $(".clone").css("opacity", "0.9");
+    }
+  );
+}
+
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+</script>
