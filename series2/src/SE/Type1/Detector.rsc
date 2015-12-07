@@ -61,7 +61,7 @@ public map[loc, map[loc, list[tuple[tuple[int, int], tuple[int, int]]]]] duplica
 	map[tuple[loc, loc], int] paths = ();
 	map[loc, map[loc, list[tuple[tuple[int, int], tuple[int, int]]]]] cloneClasses = ();
 	tuple[tuple[int, int], tuple[int, int]] lastSaved;
-	
+	loc lastLoc;
 	for(lines6 <- lines){
 		list[str] linesNew = [lines6[0][2], lines6[1][2], lines6[2][2], lines6[3][2], lines6[4][2], lines6[5][2]];
 		if(linesNew in myMap){
@@ -95,9 +95,10 @@ public map[loc, map[loc, list[tuple[tuple[int, int], tuple[int, int]]]]] duplica
 					tuple[tuple[int, int], tuple[int, int]] last = last(oldList);
 					//equal start
 					//start differ by 1
-					if(lastSaved[0][0] == oldLines[0][1][0] || lastSaved[0][0] + 1 == oldLines[0][1][0] || lastSaved[0][1] + 1 == oldLines[5][1][1] || lastSaved[0][1] == oldLines[5][1][1]){
+					
+					
+					if((lastSaved[0][0] == oldLines[0][1][0] || lastSaved[0][0] + 1 == oldLines[0][1][0]) && (lastSaved[1][0] + 1 == lines6[0][1][0] || lastSaved[1][0] == lines6[0][1][0]) && (oldLines[5][2] == lines6[5][2] )){
 						oldList[size(oldList)-1] = <<last[0][0], oldLines[5][1][1]>, <last[1][0], lines6[5][1][1]>>;
-						
 					}
 					//equal end
 					//end differ by 1
@@ -116,6 +117,7 @@ public map[loc, map[loc, list[tuple[tuple[int, int], tuple[int, int]]]]] duplica
 					old[lines6[0][0]] = [<<oldLines[0][1][0], oldLines[5][1][1]>, <lines6[0][1][0], lines6[5][1][1]>>];
 					cloneClasses[oldLines[0][0]] = old;
 					lastSaved = <<oldLines[0][1][0], oldLines[5][1][1]>, <lines6[0][1][0], lines6[5][1][1]>>;
+					
 				}
 			}
 			else{
@@ -123,14 +125,8 @@ public map[loc, map[loc, list[tuple[tuple[int, int], tuple[int, int]]]]] duplica
 				old[lines6[0][0]] = [<<oldLines[0][1][0], oldLines[5][1][1]>, <lines6[0][1][0], lines6[5][1][1]>>];
 				cloneClasses[oldLines[0][0]] = old;
 				lastSaved = <<oldLines[0][1][0], oldLines[5][1][1]>, <lines6[0][1][0], lines6[5][1][1]>>;
+
 				
-			}
-			
-			if(<lines6[0][0], oldLines[0][0]> in paths){
-				paths[<lines6[0][0], oldLines[0][0]>] = paths[<lines6[0][0], oldLines[0][0]>] + 6;
-			}
-			else{
-				paths[<lines6[0][0], oldLines[0][0]>] = 6;
 			}
 			
 		}

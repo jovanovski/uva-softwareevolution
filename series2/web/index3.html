@@ -99,33 +99,33 @@ function doStuff(data){
       $(".scrollerIn").css("width", (widthS)+"px");
       old = value.file;
     }
-    var mapID = links[value.startF + "," + value.endF];
+   // var mapID = links[value.startF + "," + value.endF];
 
-    if(mapID == undefined){
+   // if(mapID == undefined){
       linkID++;
-      links[value.startF + "," + value.endF] = linkID;
+   //   links[value.startF + "," + value.endF] = linkID;
       var color = getRandomColor();
       colors[linkID] = color;
-      addClone("main", value.startF, value.endF, data.size, linkID, color);
-      addClone(value.file, value.startT, value.endT, value.size, linkID, color);
-    }
-    else{
-      //addClone("main", value.startF, value.endF, data.size, linkID, color);
-      addClone(value.file, value.startT, value.endT, value.size, links[value.startF + "," + value.endF], colors[links[value.startF + "," + value.endF]]);
-    }
+      addClone("main", value.startF, value.endF, data.size, linkID, color, data.name);
+      addClone(value.file, value.startT, value.endT, value.size, linkID, color, value.file);
+    // }
+    // else{
+    //   //addClone("main", value.startF, value.endF, data.size, linkID, color);
+    //   addClone(value.file, value.startT, value.endT, value.size, links[value.startF + "," + value.endF], colors[links[value.startF + "," + value.endF]], value.file);
+    // }
   });
   setHandler();
 }
 
 var cloneNum = 0;
-function addClone(div, start, end, size, linkID, color){
+function addClone(div, start, end, size, linkID, color, filename){
   var topP = ((start*1.0)/(size*1.0)) * 100;
   var bottomP = ((end*1.0)/(size*1.0)) * 100;
 
   var fHeight = $("[file='"+div+"']").height();
   var marginC = cloneNum*10;
   //cloneNum++;
-  $("[file='"+div+"']").append("<div class='clone' style='margin-left:"+marginC+"px; position:absolute; top: "+(fHeight/100 * topP)+"px; height:"+(bottomP-topP)+"%; background-color:"+color+"' title='"+start+", "+end+"' linkID='"+linkID+"'></div>");
+  $("[file='"+div+"']").append("<a href='index4.html?file="+filename+"&start="+start+"&end="+end+"'><div class='clone' style='margin-left:"+marginC+"px; position:absolute; top: "+(fHeight/100 * topP)+"px; height:"+(bottomP-topP)+"%; background-color:"+color+"' title='"+start+", "+end+"' linkID='"+linkID+"'></div></a>");
 
 }
 

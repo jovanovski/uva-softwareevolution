@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+html, body{
+  height: 100%;
+  width: 100%;
+}
+
+</style>
+<body>
+<div class="output"></div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script>
+
+
+function getRelativeURI(file){
+  var sp = file.split("/");
+  var i = 0;
+  var spos;
+  for(i=0;i<sp.length;i++){
+    if(sp[i]=="src"){
+      spos = i;
+      break;
+    }
+  }
+  var res = "";
+  for(i=spos-1;i<sp.length;i++){
+    res+=sp[i]+"/";
+  }
+
+  res = res.substring(0, res.length-1);
+  return "../../../"+res;
+}
+
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+
+
+$.ajax({  
+  method: "GET",
+  dataType: "text",
+  url: getRelativeURI(getParameterByName("file"))
+})
+.success(function(data) {
+  var file = getParameterByName("file");
+  var files = file.split("/");
+  var spl = data.split("\n");
+  var start = parseInt(getParameterByName("start"))-1;
+  var end = parseInt(getParameterByName("end"))-1;
+  var output = "";
+  output = output + "<h1>"+files[files.length-1]+"</h1>";
+  console.log(spl.length);
+  for (var i=0;i<spl.length;i++) {
+    if(i>=start && i<=end){
+      output = output + ( (i+1) + ": "+spl[i]+"<br/>");
+    }
+    // else if((i>start-10 && i<start) || (i<end+10 && i>end)){
+    //   output = output + "<div style='opacity:0.5'>"+i+": "+spl[i]+"</div>";
+    // }
+  }
+  $(".output").append(output);
+});
+
+</script>

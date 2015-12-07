@@ -39,7 +39,7 @@ public str rascalToJsonMin(map[loc, map[loc, list[tuple[tuple[int, int], tuple[i
 			for(link <- links){
 			 	if(firstTime){
 					lastSubMain = subMain;
-					lineTotal += link[0][1] - link[0][0];
+					lineTotal += link[0][1] - link[0][0] + 1;
 					firstTime = false;
 				}
 				else if(subMain!=lastSubMain){
@@ -73,7 +73,7 @@ public str rascalToJson(map[loc, map[loc, list[tuple[tuple[int, int], tuple[int,
 		for(subMain <- subMains){ //all imports
 			list[tuple[tuple[int, int], tuple[int, int]]] links = subMains[subMain];
 			for(link <- links){
-				res+="{\"file\":\"<subMain.path>\", \"size\":<locSize[subMain]>, \"startF\": <link[0][0]>, \"endF\": <link[0][1]>, \"startT\": <link[1][0]>, \"endT\": <link[1][1]>, \"lines\":<link[0][1] - link[0][0]>},";
+				res+="{\"file\":\"<subMain.path>\", \"size\":<locSize[subMain]>, \"startF\": <link[0][0]>, \"endF\": <link[0][1]>, \"startT\": <link[1][0]>, \"endT\": <link[1][1]>, \"lines\":<link[0][1] - link[0][0] + 1>},";
 			}	
 		}
 		res = substring(res, 0 , size(res)-1);
