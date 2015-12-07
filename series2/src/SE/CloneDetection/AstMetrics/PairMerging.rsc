@@ -161,7 +161,7 @@ private rel[Segment,Segment] addAndMergeClonePairs(tuple[Segment,Segment] pair, 
 }
 
 public rel[loc,loc] segmentToLocationPairs(SegmentPairs pairs) {
-	return {<mergeLocations([n@src | n <- s1]),mergeLocations([n@src | n <- s2])> | <s1,s2> <- pairs};
+	return {<l1,l2> | <<l1,_>,<l2,_>> <- pairs};
 } 
 
 private set[set[Segment]] addAndMergeClass(set[Segment] c, set[set[Segment]] mcs) {

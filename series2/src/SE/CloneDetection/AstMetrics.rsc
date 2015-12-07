@@ -7,6 +7,7 @@ import List;
 import Set;
 import Map;
 import IO;
+import SE::CloneDetection::Common;
 import SE::CloneDetection::AstMetrics::Common;
 import SE::CloneDetection::AstMetrics::Config;
 import SE::CloneDetection::AstMetrics::VectorGeneration;
@@ -14,35 +15,37 @@ import SE::CloneDetection::AstMetrics::VectorGrouping;
 import SE::CloneDetection::AstMetrics::PairGeneration;
 import SE::CloneDetection::AstMetrics::PairMerging;
 
-public SegmentPairs detectType1(M3 model, int minS=defaultMinStatements) {
+public LocClasses detectType1(M3 model, int minS=defaultMinStatements) {
 	vsm = doGenerateVectorsStep(model,minS);
 	return detectType1(vsm);
 }
 
-public SegmentPairs detectType1(VectorSegmentsMap vsm) {
+public LocClasses detectType1(VectorSegmentsMap vsm) {
 	sgs = vectorSegmentsMapToSegmentGroups(vsm);
 	ps = doGeneratePairsStepWithFunc(sgs, generateType1ClonePairs);
 	mps = doMergePairsStep(ps);
-	return mps;
+	lps = doSegmentToLocationPairsStep(mps);
+	lcs = doLocPairsToLocClassesStep(lps);
+	return lcs;
 }
 
-public SegmentPairs detectType2(M3 model, int minS=6) {
+public LocClasses detectType2(M3 model, int minS=6) {
 	vsm = doGenerateVectorsStep(model,minS);
 	return detectType2(vsm);
 }
-public SegmentPairs detectType2(VectorSegmentsMap vsm) {
+public LocClasses detectType2(VectorSegmentsMap vsm) {
 	sgs = vectorSegmentsMapToSegmentGroups(vsm);
 	ps = doGeneratePairsStepWithFunc(sgs, generateType2ClonePairs);
 	mps = doMergePairsStep(ps);
 	return mps;
 }
 
-public SegmentPairs detectType3(M3 model, int minS=defaultMinStatements, int editDistancePerNrOfTokens=defaultEditDistancePerNrOfTokens) {
+public LocClasses detectType3(M3 model, int minS=defaultMinStatements, int editDistancePerNrOfTokens=defaultEditDistancePerNrOfTokens) {
 	vsm = doGenerateVectorsStep(model,minS);
 	return detectType3(vsm,editDistancePerNrOfTokens=editDistancePerNrOfTokens);
 }
 
-public SegmentPairs detectType3(VectorSegmentsMap vs, int editDistancePerNrOfTokens=defaultEditDistancePerNrOfTokens) {
+public LocClasses detectType3(VectorSegmentsMap vs, int editDistancePerNrOfTokens=defaultEditDistancePerNrOfTokens) {
 	println("Grouping vectors by hamming distance per nr of tokens...");
 	vgs = groupVectorsBySimilarity(vs, editDistancePerNrOfTokens);
 	println("Translating vector groups to segment groups...");
@@ -54,6 +57,7 @@ public SegmentPairs detectType3(VectorSegmentsMap vs, int editDistancePerNrOfTok
 	return mps;
 }
 
+// common steps
 private VectorSegmentsMap doGenerateVectorsStep(M3 model, int minS) {
 	println("Generating vectors...");
 	vs = generateVectors(model,minS=minS);
@@ -74,7 +78,14 @@ private SegmentPairs doMergePairsStep(SegmentPairs ps) {
 	return mergeOverlappingClonePairs(ps);
 }
 
-private rel[loc,loc] doSegmentToLocationPairsStep(SegmentPairs pairs) {
+private rel[loc,loc] doSegmentToLocationPairsStep(SegmentPairs ps) {
 	println("Converting segment pairs to location pairs");
 	return segmentToLocationPairs(ps);
+}
+
+private LocClasses doLocPairsToLocClassesStep(LocPairs lps) {
+	println("Converting location pairs to location classes");
+	lcs = locPairsToLocClasses(lps);
+	println("<size(lcs)> classes");
+	return lcs;
 }
