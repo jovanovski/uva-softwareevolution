@@ -20,6 +20,8 @@ text {
   float: left;
   overflow: hidden;
   color: white;
+  text-align: center;
+  box-shadow: 7px 0 20px #000;
 }
 
 .file2{
@@ -30,6 +32,8 @@ text {
   margin-left: 50px;
   float: left;
   overflow: hidden;
+  text-align: center;
+  box-shadow: 7px 0 20px #000;
 }
 
 .clone{
@@ -37,8 +41,6 @@ text {
   background-color: red;
   cursor: pointer;
   opacity: 0.9;
-  border-bottom: 1px dashed white;
-  border-top: 1px dashed white;
 }
 
 .scroller, .scrollerIn{
@@ -52,12 +54,23 @@ text {
   float: right;
 }
 
+.tooltip{
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #000;
+  opacity: 0.5;
+  color: white;
+  padding: 5px;
+}
+
 </style>
 <body>
 <div class="file1" file='main'></div>
 <div class="scroller">
 <div class="scrollerIn"></div>
 </div>
+<div class="tooltip"></div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <script>
 
@@ -82,7 +95,6 @@ $.ajax({
 });
 
 function doStuff(data){
-  console.log(data);
   var ar = data.name.split("/");
   var arn = ar[ar.length-1];
   $(".file1").html(arn+$(".file1").html());
@@ -94,25 +106,25 @@ function doStuff(data){
 
       ar = value.file.split("/");
       arn = ar[ar.length-1];
-      $(".scrollerIn").append("<div class='file2' file='"+value.file+"'>"+arn+"</div>");
+      $(".scrollerIn").append("<div class='file2' file='"+value.file+"'><a href='index3.html?file="+value.file+"'><div style='position:absolute;top:0;left:0;width:100%;text-align:center;'>"+arn+"</div></a></div>");
       widthS += 250;
       $(".scrollerIn").css("width", (widthS)+"px");
       old = value.file;
     }
-   // var mapID = links[value.startF + "," + value.endF];
+    var mapID = links[value.startF + "," + value.endF];
 
-   // if(mapID == undefined){
+    if(mapID == undefined){
       linkID++;
-   //   links[value.startF + "," + value.endF] = linkID;
+      links[value.startF + "," + value.endF] = linkID;
       var color = getRandomColor();
       colors[linkID] = color;
       addClone("main", value.startF, value.endF, data.size, linkID, color, data.name);
       addClone(value.file, value.startT, value.endT, value.size, linkID, color, value.file);
-    // }
-    // else{
-    //   //addClone("main", value.startF, value.endF, data.size, linkID, color);
-    //   addClone(value.file, value.startT, value.endT, value.size, links[value.startF + "," + value.endF], colors[links[value.startF + "," + value.endF]], value.file);
-    // }
+     }
+     else{
+       //addClone("main", value.startF, value.endF, data.size, linkID, color);
+       addClone(value.file, value.startT, value.endT, value.size, links[value.startF + "," + value.endF], colors[links[value.startF + "," + value.endF]], value.file);
+     }
   });
   setHandler();
 }
@@ -135,6 +147,7 @@ function setHandler(){
     function(){
       $(".clone").css("opacity", "0.2");
       $(".clone[linkID='"+$(this).attr('linkID')+"']").css("opacity", "1");
+      $(".tooltip").text($(this).attr('title'));
   }, function() {
       $(".clone").css("opacity", "0.9");
     }

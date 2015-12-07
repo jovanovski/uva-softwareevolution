@@ -113,8 +113,10 @@
             .data(chord.groups())
             .enter().append("svg:g")
             .attr("class", "group")
+            .style("cursor", "pointer")
             .on("mouseover", mouseover)
-            .on("mouseout", function (d) { d3.select("#tooltip").style("visibility", "hidden") });
+            .on("mouseout", function (d) { d3.select("#tooltip").style("visibility", "hidden") })
+            .on("click", function(d){ window.location = "index3.html?file=" + rdr(d).gname;});
 
         g.append("svg:path")
             .style("stroke", "black")
