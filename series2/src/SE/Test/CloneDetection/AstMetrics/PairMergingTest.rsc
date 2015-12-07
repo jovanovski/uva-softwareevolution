@@ -1,4 +1,4 @@
-module SE::Test::CloneDetection::Type23::PairMergingTest
+module SE::Test::CloneDetection::AstMetrics::PairMergingTest
 
 import lang::java::jdt::m3::Core;
 import lang::java::m3::Core;
@@ -8,7 +8,7 @@ import List;
 import Map;
 import IO;
 import Node;
-import SE::CloneDetection::Type23::PairMerging;
+import SE::CloneDetection::AstMetrics::PairMerging;
 
 data TestTree = ttn(value v, list[TestTree] children);
 public test bool testGetRelation() {

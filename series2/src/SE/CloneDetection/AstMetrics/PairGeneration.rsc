@@ -1,4 +1,4 @@
-module SE::CloneDetection::Type23::PairGeneration
+module SE::CloneDetection::AstMetrics::PairGeneration
 
 import lang::java::jdt::m3::Core;
 import lang::java::m3::Core;
@@ -8,43 +8,33 @@ import List;
 import Map;
 import IO;
 import Node;
-import SE::CloneDetection::Type23::Core;
+import Type;
+import util::Math;
+import SE::CloneDetection::AstMetrics::Core;
+import SE::CloneDetection::AstMetrics::SegmentRelation;
 
-public rel[Segment,Segment] generateClonePairsByEquivalence(Vectors vs) {
+public SegmentPairs generateType1ClonePairs(SegmentGroups segmentGroups) = generateClonePairsWithMatchFunc(segmentGroups, bool (NodeList s1, NodeList s2) {
+	return s1 == s2;
+});
+
+public SegmentPairs generateType2ClonePairs(SegmentGroups segmentGroups) = generateClonePairsWithMatchFunc(segmentGroups, areType2Equivalent);
+
+public SegmentPairs generateType3ClonePairs(SegmentGroups segmentGroups, int editDistancePerNrOfTokens) = generateClonePairsWithMatchFunc(segmentGroups, bool (NodeList s1, NodeList s2) {
+	return areType3Equivalent(s1,s2,editDistancePerNrOfTokens);
+});
+
+public SegmentPairs generateClonePairsWithMatchFunc(SegmentGroups segmentGroups, bool(NodeList,NodeList) matchFunc) {
 	rel[Segment,Segment] pairs = {};
-	map[Vector,set[Segment]] mvs = ();
-	for (<v,s> <- vs) {
-		mvs[v] = v in mvs ? mvs[v] + {s} : {s};
-	}
-	for (v <- mvs) {
-		ss = mvs[v];
-		while (!isEmpty(ss)) {
-			<s1,ss> = takeOneFrom(ss);
-			pairs += {s1[0]@src.uri <= s2[0]@src.uri ? <s1,s2> : <s2,s1> | s2 <- ss, areType2Equivalent(s1,s2)};
+	for (group <- segmentGroups) {
+		while (!isEmpty(group)) {
+			<s1,group> = takeOneFrom(group);
+			<l1,ns1> = s1;			
+			matches = {s2 | s2:<l2,ns2> <- group, getSegmentRelation(s1,s2) == disjoint(), matchFunc(ns1,ns2)};
+			pairs += {ns1[0]@src.uri <= ns2[0]@src.uri ? <s1,s2> : <s2,s1> | s2:<l2,ns2> <- matches};
 		}
 	}
 	return pairs;
 }
-
-//public rel[Segment,Segment] generateClonePairs(set[set[Segment]] segmentGroups, bool (Segment,Segment) filterFunc) {
-//	rel[Segment,Segment] pairs = {};
-//	for (segments <- segmentGroups) {
-//		//segmentsWithLocs = {<s,mergeLocations([n@src | n <- s])> | s <- segments};
-//		while (!isEmpty(segments)) {
-//			<s1,segmentsWithLocs> = takeOneFrom(segments);
-//			pairs += {s1[0]@src.uri <= s2[0]@src.uri ? <s1,s2> : <s2,s1> | s2 <- segmentsWithLocs, filterFunc(s1,s2)};
-//		}
-//	}
-//	return pairs;
-//}
-//
-//public map[Vector, set[Segment]] groupSegmentsByVector(Vectors vs) {
-//	map[Vector,set[Segment]] mvs = ();
-//	for (<v,s> <- vs) {
-//		mvs[v] = v in mvs ? mvs[v] + {s} : {s};
-//	}
-//	return mvs;
-//}
 
 public bool areType2Equivalent(value v1, value v2) {
 	switch (v1) {
@@ -77,5 +67,9 @@ public bool areType2Equivalent(value v1, value v2) {
 		}
 	}
 	return true;
-} 
+}
 private bool areGenericNodesType2Equivalent(node n1, node n2) = getName(n1) == getName(n2) && areType2Equivalent(getChildren(n1), getChildren(n2));
+
+public bool areType3Equivalent(value v1, value v2) {
+	return false;
+}

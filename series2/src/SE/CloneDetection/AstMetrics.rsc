@@ -1,54 +1,82 @@
-//module SE::CloneDetection::AstMetrics
-//
-//import lang::java::jdt::m3::Core;
-//import lang::java::m3::Core;
-//import lang::java::m3::AST;
-//import Set;
-//import Node;
-//import List;
-//import Map;
-//import IO;
-//import util::Math;
-//import SE::Utils;
-//
-//private int hammingDistance(int vSize, Vector v1, Vector v2) = (0 | it + abs(v1[i] - v2[i]) | i <- [0..vSize]);
-//private real euclideanDistance(int vSize, Vector v1, Vector v2) = sqrt((0 | it + pow(v1[i] - v2[i],2) | i <- [0..vSize]));
-//
-//
-//
-//
-//
-////public map[str,rel[Segment,Segment]] generateClonePairs(map[Vector,set[list[node]]] mvs) {
-////	map[str,rel[Segment,Segment]] pairs = ();
-////	i = 0;
-////	for (v <- mvs) {
-////		nodelists = mvs[v];
-////		while (!isEmpty(nodelists)) {
-////			<s1,nodelists> = takeOneFrom(nodelists);
-////			str uri = s1[0]@src.uri;
-////			for (pair <- {<s1,s2> | s2 <- nodelists, areType2Equivalent(s1,s2)}) {
-////				i += 1;
-////				pairs = addAndCombinePairs(pair,pairs);
-////			}
-////		}
-////	}
-////	//for (pair <- {<s1[0]@src.uri, s1,s2> | v <- mvs, s1 <- mvs[v], s2 <- mvs[v], areType2Equivalent(s1,s2)}) {
-////	//	pairs += pair;
-////	//	//pairs = addAndCombinePairs(<s1,s2>,pairs);
-////	//}
-////	return pairs;
-////}
-////
-//
-////
-////public test bool propType2EquivalenceDisregardsNonRelevantNodes(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl) {
-////	m = \method(\return, name, parameters, exceptions, impl);
-////	m2 = visit(m) {
-////		case str s => "foo"
-////		case int i => 1
-////		case bool b => false
-////		case Type t => string()
-////	}
-////	
-////	return areType2Equivalent(m,m2);
-////}
+module SE::CloneDetection::AstMetrics
+
+import lang::java::jdt::m3::Core;
+import lang::java::m3::Core;
+import lang::java::m3::AST;
+import List;
+import Set;
+import Map;
+import IO;
+import SE::CloneDetection::AstMetrics::Core;
+import SE::CloneDetection::AstMetrics::VectorGeneration;
+import SE::CloneDetection::AstMetrics::VectorGrouping;
+import SE::CloneDetection::AstMetrics::PairGeneration;
+import SE::CloneDetection::AstMetrics::PairMerging;
+
+int defaultEditDistancePerNrOfTokens = 30;
+int defaultMinStatements = 6;
+
+public SegmentPairs detectType1(M3 model, int minS=defaultMinStatements) {
+	vsm = doGenerateVectorsStep(model,minS);
+	return detectType1(vsm);
+}
+
+public SegmentPairs detectType1(VectorSegmentsMap vsm) {
+	sgs = vectorSegmentsMapToSegmentGroups(vsm);
+	ps = doGeneratePairsStepWithFunc(sgs, generateType1ClonePairs);
+	mps = doMergePairsStep(ps);
+	return mps;
+}
+
+public SegmentPairs detectType2(M3 model, int minS=6) {
+	vsm = doGenerateVectorsStep(model,minS);
+	return detectType2(vsm);
+}
+public SegmentPairs detectType2(VectorSegmentsMap vsm) {
+	sgs = vectorSegmentsMapToSegmentGroups(vsm);
+	ps = doGeneratePairsStepWithFunc(sgs, generateType2ClonePairs);
+	mps = doMergePairsStep(ps);
+	return mps;
+}
+
+public SegmentPairs detectType3(M3 model, int minS=defaultMinStatements, int editDistancePerNrOfTokens=defaultEditDistancePerNrOfTokens) {
+	vsm = doGenerateVectorsStep(model,minS);
+	return detectType3(vsm,editDistancePerNrOfTokens=editDistancePerNrOfTokens);
+}
+
+public SegmentPairs detectType3(VectorSegmentsMap vs, int editDistancePerNrOfTokens=defaultEditDistancePerNrOfTokens) {
+	println("Grouping vectors by hamming distance per nr of tokens...");
+	vgs = groupVectorsBySimilarity(vs, editDistancePerNrOfTokens);
+	println("Translating vector groups to segment groups...");
+	sgs = getSegmentsForVectorGroups(vm, vgs);
+	ps = doGeneratePairsStepWithFunc(sgs, SegmentPairs (SegmentGroups) {
+		return generateType3ClonePairs(sgs, editDistancePerNrOfTokens);
+	});
+	mps = doMergePairsStep(ps);
+	return mps;
+}
+
+private VectorSegmentsMap doGenerateVectorsStep(M3 model, int minS) {
+	println("Generating vectors...");
+	vs = generateVectors(model,minS=minS);
+	println("<size(vs)> vectors generated");
+	return vectorsToMap(vs);
+}
+
+private SegmentPairs doGeneratePairsStepWithFunc(SegmentGroups sgs, SegmentPairs (SegmentGroups) pairGenerationFunc) {
+	println("Generating clone pairs...");
+	ps = pairGenerationFunc(sgs);
+	println("<size(ps)> pairs generated");
+	return ps;
+}
+
+private SegmentPairs doMergePairsStep(SegmentPairs ps) {
+	return ps;
+	println("Merging overlapping clone pairs...");
+	return mergeOverlappingClonePairs(ps);
+}
+
+private rel[loc,loc] doSegmentToLocationPairsStep(SegmentPairs pairs) {
+	println("Converting segment pairs to location pairs");
+	return segmentToLocationPairs(ps);
+}

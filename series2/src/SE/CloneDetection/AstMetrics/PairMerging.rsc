@@ -1,4 +1,4 @@
-module SE::CloneDetection::Type23::PairMerging
+module SE::CloneDetection::AstMetrics::PairMerging
 
 import lang::java::jdt::m3::Core;
 import lang::java::m3::Core;
@@ -10,15 +10,88 @@ import IO;
 import Node;
 import util::Math;
 import SE::Utils;
-import SE::CloneDetection::Type23::Core;
+import SE::CloneDetection::AstMetrics::Core;
+import SE::CloneDetection::AstMetrics::SegmentRelation;
 
-public data SegmentRelation
-	= equivalent()
-	| contains()
-	| containedIn()
-	| overlapsLeft(int overlapCount)
-	| overlapsRight(int overlapCount)
-	| disjoint();
+public alias LocSegmentPair = tuple[loc,Segment,loc,Segment];
+public alias LocSegmentPairs = set[LocSegmentPair];
+
+
+public SegmentPairs mergeOverlappingClonePairs(SegmentPairs ps) {
+	LocSegmentPairs locPs = {<mergeLocations([n@src | n <- s1]),s1,mergeLocations([n@src | n <- s2]),s2> | <s1,s2> <- ps};
+	map[str,map[int,LocSegmentPairs]] uriLinePairs = ();
+	i = 0;
+	for (lp <- locPs) {
+		uriLinePairs = addAndCombinePair(lp,uriLinePairs);
+		i += 1;
+		println("<i>");
+	}
+
+	return {<s1,s2> | uri <- uriLinePairs, j <- uriLinePairs[uri], <_,s1,_,s2> <- uriLinePairs[uri][j]};
+}
+
+private map[str,map[int,LocSegmentPairs]] addAndCombinePair(LocSegmentPair lp, map[str,map[int,LocSegmentPairs]] uriLinePairs) {
+	<l1,s1,l2,s2> = lp;
+	uri = l1.uri;
+	map[int,LocSegmentPairs] linePairs = uri in uriLinePairs ? uriLinePairs[uri] : ();
+	for (i <- [l1.begin.line..l1.end.line+1]) {
+		pairs = i in linePairs ? linePairs[i] : {};
+		for (lp2:<l3,s3,l4,s4> <- pairs) {
+			r = getSegmentRelation(l1,s1,l3,s3);
+			if (r != disjoint() && r == getSegmentRelation(l2,s2,l4,s4)) {
+				switch (r) {
+					case contains(): {
+						println("contains");						
+						uriLinePairs = deletePair(lp2,uriLinePairs);
+						return addAndCombinePair(lp, uriLinePairs);
+					}
+					case containedIn(): {					
+						println("containedIn");
+						return uriLinePairs;
+					}
+					case overlapsLeft(oc): {					
+						println("overlapsLeft(<oc>)");
+						uriLinePairs = deletePair(lp2,uriLinePairs);
+						return addAndCombinePair(<mergeLocations(l1,l3),s3+slice(s1,oc,size(s1)-oc),mergeLocations(l2,l4),s4+slice(s2,oc,size(s2)-oc)>, uriLinePairs);
+					}
+					case overlapsRight(oc): {
+						println("overlapsRight(<oc>)");
+						uriLinePairs = deletePair(lp2,uriLinePairs);
+						return addAndCombinePair(<mergeLocations(l3,l1),s1+slice(s3,oc,size(s3)-oc),mergeLocations(l4,l2),s2+slice(s4,oc,size(s4)-oc)>, uriLinePairs);
+					}
+					case _: throw "impossible relation";
+				}
+			}
+		}
+	}
+	return addPair(lp,uriLinePairs);
+}
+
+private map[str,map[int,LocSegmentPairs]] addPair(LocSegmentPair p, map[str,map[int,LocSegmentPairs]] uriLinePairs) {
+	<l1,_,_,_> = p;
+	uri = l1.uri;
+	map[int,LocSegmentPairs] linePairs = uri in uriLinePairs ? uriLinePairs[uri] : ();
+	for (i <- [l1.begin.line..l1.end.line+1]) {
+		pairs = i in linePairs ? linePairs[i] : {};
+		pairs += p;
+		linePairs[i] = pairs;
+	}
+	uriLinePairs[uri] = linePairs;
+	return uriLinePairs;
+}
+
+private map[str,map[int,LocSegmentPairs]] deletePair(LocSegmentPair p, map[str,map[int,LocSegmentPairs]] uriLinePairs) {
+	<l1,_,_,_> = p;
+	uri = l1.uri;
+	map[int,LocSegmentPairs] linePairs = uri in uriLinePairs ? uriLinePairs[uri] : ();
+	for (i <- [l1.begin.line..l1.end.line+1]) {
+		pairs = i in linePairs ? linePairs[i] : {};
+		pairs -= p;
+		linePairs[i] = pairs;
+	}
+	uriLinePairs[uri] = linePairs;
+	return uriLinePairs;
+}
 
 public map[str,map[str,rel[Segment,Segment]]] groupPairsByUris(rel[Segment,Segment] pairs) {
 	map[str,map[str,rel[Segment,Segment]]] pairsByUris = ();
@@ -87,22 +160,46 @@ private rel[Segment,Segment] addAndMergeClonePairs(tuple[Segment,Segment] pair, 
 	return pairs;
 }
 
-public SegmentRelation getSegmentRelation(Segment l1, Segment l2) {
-	loc1s = [n@src | n <- l1];
-	loc2s = [n@src | n <- l2];
-	loc1 = mergeLocations(loc1s);
-	loc2 = mergeLocations(loc2s);
-	if (loc1 == loc2) {
-		return equivalent();
-	} else if (loc1 > loc2) {
-		return contains();
-	} else if (loc1 < loc2) {
-		return containedIn();
-	} else if (loc1.offset < loc2.offset && loc1.offset + loc1.length > loc2.offset) {
-		return overlapsRight(size(l1)-indexOf(loc1s,loc2s[0]));
-	} else if (loc2.offset < loc1.offset && loc2.offset + loc2.length > loc1.offset) {
-		return overlapsLeft(size(l2)-indexOf(loc2s,loc1s[0]));
-	} else {
-		return disjoint();
+public rel[loc,loc] segmentToLocationPairs(SegmentPairs pairs) {
+	return {<mergeLocations([n@src | n <- s1]),mergeLocations([n@src | n <- s2])> | <s1,s2> <- pairs};
+} 
+
+private set[set[Segment]] addAndMergeClass(set[Segment] c, set[set[Segment]] mcs) {
+	for (c2 <- mcs) {
+		sc = size(c);
+		sc2 = size(c2);
+		if (sc > sc2) {
+			for (s <- sc) {
+				rfound = false;
+				for (s2 <- sc2) {
+					if (segmentRelation(s,s2) == contains()) {
+						rfound = true;
+						break;
+					};
+				}
+				if (!rfound) {
+					break;
+				}
+			}
+		} 
+		if (sc < sc2) {
+			for (s <- c2) {
+				rfound = false;
+				for (s <- c) {
+					if (segmentRelation(s,s2) == containedIn()) {
+						rfound = true;
+						break;
+					}
+					if (!rfound) {
+						break;
+					}
+				}
+			}
+		} 
+		if (sc == sc2) {
+			;
+		}
 	}
+	mcs += c;
+	return mcs;
 }

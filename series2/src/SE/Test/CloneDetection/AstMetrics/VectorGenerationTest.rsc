@@ -8,7 +8,7 @@ import List;
 import Map;
 import IO;
 import Node;
-import SE::CloneDetection::Type23::VectorGeneration;
+import SE::CloneDetection::AstMetrics::VectorGeneration;
 
 public test bool propVectorSumEqualsToNumberOfRelevantNodes(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl) {
 	m = \method(\return,name, parameters, exceptions, impl);

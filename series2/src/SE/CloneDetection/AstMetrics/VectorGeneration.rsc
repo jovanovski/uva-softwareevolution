@@ -1,4 +1,4 @@
-module SE::CloneDetection::Type23::VectorGeneration
+module SE::CloneDetection::AstMetrics::VectorGeneration
 
 import lang::java::jdt::m3::Core;
 import lang::java::m3::Core;
@@ -8,7 +8,7 @@ import List;
 import Map;
 import IO;
 import Node;
-import SE::CloneDetection::Type23::Core;
+import SE::CloneDetection::AstMetrics::Core;
 
 public data NodeType
 	= declarationNode(str name)
@@ -19,17 +19,17 @@ public alias VectorTemplate = list[NodeType];
 public alias NodeCount = map[NodeType, int];
 public alias NodeCounts = rel[NodeCount,Segment];
 
-public Vectors computeVectors(M3 model, int minS=6) = computeVectors(model, getVectorTemplate(model), minS=minS);
-public Vectors computeVectors(M3 model, VectorTemplate template, int minS=6) {
-	return computeVectors([getMethodASTEclipse(meth,model=model) | meth <- methods(model)], template, minS=minS);
+public Vectors generateVectors(M3 model, int minS=6) = generateVectors(model, getVectorTemplate(model), minS=minS);
+public Vectors generateVectors(M3 model, VectorTemplate template, int minS=6) {
+	return generateVectors([getMethodASTEclipse(meth,model=model) | meth <- methods(model)], template, minS=minS);
 }
-public Vectors computeVectors(list[node] ns, int minS=6) = computeVectors(ns, getVectorTemplate(ns), minS=minS);
-public Vectors computeVectors(list[node] ns, VectorTemplate template, int minS=6) {
-	return ({} | it + computeVectors(n, template,minS=minS) | n <- ns);
+public Vectors generateVectors(list[node] ns, int minS=6) = generateVectors(ns, getVectorTemplate(ns), minS=minS);
+public Vectors generateVectors(list[node] ns, VectorTemplate template, int minS=6) {
+	return ({} | it + generateVectors(n, template,minS=minS) | n <- ns);
 }
-public Vectors computeVectors(node n, int minS=6) = computeVectors(n, getVectorTemplate(n), minS=minS);
-public Vectors computeVectors(node n, VectorTemplate template, int minS=6) {
-	<_,_,ncs> = computeNodeCountsRecursively(n,minS=minS);
+public Vectors generateVectors(node n, int minS=6) = generateVectors(n, getVectorTemplate(n), minS=minS);
+public Vectors generateVectors(node n, VectorTemplate template, int minS=6) {
+	<_,_,ncs> = generateNodeCountsRecursively(n,minS=minS);
 	return {<[nt in nc ? nc[nt] : 0 | nt <- template],ns> | <nc,ns> <- ncs};
 }
 
@@ -51,34 +51,34 @@ public set[NodeType] getNodeTypes(value v) {
 	return nodeTypes;
 }
 
-public tuple[int, NodeCount, NodeCounts] computeNodeCountsRecursively(value n, int minS=6) {
+public tuple[int, NodeCount, NodeCounts] generateNodeCountsRecursively(value n, int minS=6) {
     c = 0;
     nc = ();
     NodeCounts ncs = {};
 	switch (n) {
 		case list[Statement] xs: {
-			xrs = [<computeNodeCountsRecursively(x,minS=minS), x> | x <- xs];
+			xrs = [<generateNodeCountsRecursively(x,minS=minS), x> | x <- xs];
 			for (<<xc,xnc,xncs>,_> <- xrs) {
 				c += xc;
 				nc = mergeNodeCounts(nc,xnc);
 				ncs += xncs;
 			}	
-			for(ys <- getMinSeqs(xrs, bool (lrel[tuple[int,NodeCount,NodeCounts],node] zs) {
-				return (0 | it + zc | <<zc,_,_>,_> <- zs) >= minS;
-			})) {
-				<<mc,mnc,mncs>,mn> = head(ys);
-				mns = [mn];
-				for (<<xc,xnc,xncs>,xn> <- tail(ys)) {
-					mc += xc;
-					mnc = mergeNodeCounts(mnc,xnc);
-					mncs += xncs;
-					mns += [xn];
-				}
-				ncs += <mnc, mns>;
-			}
+			//for(ys <- getMinSeqs(xrs, bool (lrel[tuple[int,NodeCount,NodeCounts],node] zs) {
+			//	return (0 | it + zc | <<zc,_,_>,_> <- zs) >= minS;
+			//})) {
+			//	<<mc,mnc,mncs>,mn> = head(ys);
+			//	mns = [mn];
+			//	for (<<xc,xnc,xncs>,xn> <- tail(ys)) {
+			//		mc += xc;
+			//		mnc = mergeNodeCounts(mnc,xnc);
+			//		mncs += xncs;
+			//		mns += [xn];
+			//	}
+			//	ncs += <mnc, mns>;
+			//}
 		}
 	    case list[value] xs: {	    	
-			xrs = [computeNodeCountsRecursively(x,minS=minS) | x <- xs];
+			xrs = [generateNodeCountsRecursively(x,minS=minS) | x <- xs];
 			for (<xc,xnc,xncs> <- xrs) {
 				c += xc;
 				nc = mergeNodeCounts(nc,xnc);
@@ -86,7 +86,7 @@ public tuple[int, NodeCount, NodeCounts] computeNodeCountsRecursively(value n, i
 			}
 	    }
 	    case node n: {
-	    	<dc,dnc,dncs> = computeNodeCountsRecursively(getChildren(n),minS=minS);
+	    	<dc,dnc,dncs> = generateNodeCountsRecursively(getChildren(n),minS=minS);
 	    	c += dc;
 	    	nc = mergeNodeCounts(nc,dnc);
 	    	ncs += dncs;
@@ -97,7 +97,7 @@ public tuple[int, NodeCount, NodeCounts] computeNodeCountsRecursively(value n, i
 					nc = addNodeType(nc, statementNode(getName(s)));
 					c += 1;
 					if (c >= minS) {
-						ncs += {<nc, [n]>};
+						ncs += {<nc, <n@src, [n]>>};
 					}
 				}
 				case Expression e: nc = addNodeType(nc, expressionNode(getName(e)));
