@@ -8,6 +8,7 @@ import List;
 import Map;
 import IO;
 import Node;
+import SE::Utils;
 import SE::CloneDetection::AstMetrics::Core;
 
 public data NodeType
@@ -63,19 +64,21 @@ public tuple[int, NodeCount, NodeCounts] generateNodeCountsRecursively(value n, 
 				nc = mergeNodeCounts(nc,xnc);
 				ncs += xncs;
 			}	
-			//for(ys <- getMinSeqs(xrs, bool (lrel[tuple[int,NodeCount,NodeCounts],node] zs) {
-			//	return (0 | it + zc | <<zc,_,_>,_> <- zs) >= minS;
-			//})) {
-			//	<<mc,mnc,mncs>,mn> = head(ys);
-			//	mns = [mn];
-			//	for (<<xc,xnc,xncs>,xn> <- tail(ys)) {
-			//		mc += xc;
-			//		mnc = mergeNodeCounts(mnc,xnc);
-			//		mncs += xncs;
-			//		mns += [xn];
-			//	}
-			//	ncs += <mnc, mns>;
-			//}
+			for(ys <- getMinSeqs(xrs, bool (lrel[tuple[int,NodeCount,NodeCounts],node] zs) {
+				return (0 | it + zc | <<zc,_,_>,_> <- zs) >= minS;
+			})) {
+				<<mc,mnc,mncs>,mn> = head(ys);
+				ml = mn@src;
+				mns = [mn];
+				for (<<xc,xnc,xncs>,xn> <- tail(ys)) {
+					mc += xc;
+					mnc = mergeNodeCounts(mnc,xnc);
+					mncs += xncs;
+					ml = mergeLocations(ml, xn@src);
+					mns += [xn];
+				}
+				ncs += <mnc, <ml,mns>>;
+			}
 		}
 	    case list[value] xs: {	    	
 			xrs = [generateNodeCountsRecursively(x,minS=minS) | x <- xs];

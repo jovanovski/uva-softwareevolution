@@ -8,13 +8,11 @@ import Set;
 import Map;
 import IO;
 import SE::CloneDetection::AstMetrics::Core;
+import SE::CloneDetection::AstMetrics::Config;
 import SE::CloneDetection::AstMetrics::VectorGeneration;
 import SE::CloneDetection::AstMetrics::VectorGrouping;
 import SE::CloneDetection::AstMetrics::PairGeneration;
 import SE::CloneDetection::AstMetrics::PairMerging;
-
-int defaultEditDistancePerNrOfTokens = 30;
-int defaultMinStatements = 6;
 
 public SegmentPairs detectType1(M3 model, int minS=defaultMinStatements) {
 	vsm = doGenerateVectorsStep(model,minS);
