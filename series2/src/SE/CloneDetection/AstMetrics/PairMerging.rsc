@@ -10,7 +10,7 @@ import IO;
 import Node;
 import util::Math;
 import SE::Utils;
-import SE::CloneDetection::AstMetrics::Core;
+import SE::CloneDetection::AstMetrics::Common;
 import SE::CloneDetection::AstMetrics::SegmentRelation;
 
 public alias LocSegmentPair = tuple[loc,Segment,loc,Segment];

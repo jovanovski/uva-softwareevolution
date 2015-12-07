@@ -9,7 +9,7 @@ import Map;
 import IO;
 import Node;
 import util::Math;
-import SE::CloneDetection::AstMetrics::Core;
+import SE::CloneDetection::AstMetrics::Common;
 
 public VectorSegmentsMap vectorsToMap(Vectors vs) {
 	VectorSegmentsMap vsm = ();

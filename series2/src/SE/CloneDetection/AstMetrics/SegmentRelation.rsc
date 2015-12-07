@@ -7,7 +7,7 @@ import List;
 import IO;
 
 import SE::Utils;
-import SE::CloneDetection::AstMetrics::Core;
+import SE::CloneDetection::AstMetrics::Common;
 
 public data SegmentRelation
 	= equivalent()

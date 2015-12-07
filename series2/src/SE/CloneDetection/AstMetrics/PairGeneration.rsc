@@ -10,7 +10,7 @@ import IO;
 import Node;
 import Type;
 import util::Math;
-import SE::CloneDetection::AstMetrics::Core;
+import SE::CloneDetection::AstMetrics::Common;
 import SE::CloneDetection::AstMetrics::SegmentRelation;
 
 public SegmentPairs generateType1ClonePairs(SegmentGroups segmentGroups) = generateClonePairsWithMatchFunc(segmentGroups, bool (NodeList s1, NodeList s2) {

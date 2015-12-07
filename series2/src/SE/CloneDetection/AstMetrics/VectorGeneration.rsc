@@ -9,7 +9,7 @@ import Map;
 import IO;
 import Node;
 import SE::Utils;
-import SE::CloneDetection::AstMetrics::Core;
+import SE::CloneDetection::AstMetrics::Common;
 
 public data NodeType
 	= declarationNode(str name)

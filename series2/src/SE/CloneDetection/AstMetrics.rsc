@@ -7,7 +7,7 @@ import List;
 import Set;
 import Map;
 import IO;
-import SE::CloneDetection::AstMetrics::Core;
+import SE::CloneDetection::AstMetrics::Common;
 import SE::CloneDetection::AstMetrics::Config;
 import SE::CloneDetection::AstMetrics::VectorGeneration;
 import SE::CloneDetection::AstMetrics::VectorGrouping;

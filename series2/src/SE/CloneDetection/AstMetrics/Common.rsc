@@ -1,4 +1,4 @@
-module SE::CloneDetection::AstMetrics::Core
+module SE::CloneDetection::AstMetrics::Common
 
 public alias NodeList = list[node];
 public alias Segment = tuple[loc,NodeList];
