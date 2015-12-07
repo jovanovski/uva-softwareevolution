@@ -10,7 +10,6 @@ public alias LocClasses = set[LocClass];
 
 public LocClasses locPairsToLocClasses(LocPairs lps) {
 	LocClasses lcs = {};
-	lps += {<l2,l1> | <l1,l2> <- lps}; // make symmetric in order to be able to traverse all relations in the clone group
 	while (!isEmpty(lps)) {
 		<<l1,l2>,lps> = takeOneFrom(lps);
 		cs = {l1,l2};

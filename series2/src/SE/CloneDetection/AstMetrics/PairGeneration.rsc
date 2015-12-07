@@ -30,9 +30,10 @@ public SegmentPairs generateClonePairsWithMatchFunc(SegmentGroups segmentGroups,
 			<s1,group> = takeOneFrom(group);
 			<l1,ns1> = s1;			
 			matches = {s2 | s2:<l2,ns2> <- group, getSegmentRelation(s1,s2) == disjoint(), matchFunc(ns1,ns2)};
-			pairs += {ns1[0]@src.uri <= ns2[0]@src.uri ? <s1,s2> : <s2,s1> | s2:<l2,ns2> <- matches};
+			pairs += {<s1,s2> | s2:<l2,ns2> <- matches};
 		}
 	}
+	pairs += {<s2,s1> | <s1,s2> <- pairs};	// make symmetric
 	return pairs;
 }
 

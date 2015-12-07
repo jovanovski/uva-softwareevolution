@@ -16,7 +16,6 @@ import SE::CloneDetection::AstMetrics::SegmentRelation;
 alias UriIndexedSegmentPairs = map[str,map[str,SegmentPairs]];
 	
 public SegmentPairs mergeOverlappingClonePairs(SegmentPairs pairs) {
-	pairs = pairs + {<s2,s1> | <s1,s2> <- pairs};
 	SegmentPairs mergedPairs = {};
 	UriIndexedSegmentPairs fromToUriPairs = indexPairsByUris(pairs);
 	for (uri1 <- fromToUriPairs) {
@@ -24,7 +23,6 @@ public SegmentPairs mergeOverlappingClonePairs(SegmentPairs pairs) {
 		for (uri2 <- toUriPairs) {
 			pairs2 = toUriPairs[uri2];
 			mergedPairs2 = {};
-			//for (pair <- sort(pairs2, bool (tuple[Segment,Segment] p1, tuple[Segment,Segment] p2) { return p1[0][1]@src < p2[0][1]@src;})) {
 			for (pair <- pairs2) {
 				mergedPairs2 = addAndMergeClonePairs(pair,mergedPairs2);
 			}
