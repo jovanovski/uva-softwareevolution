@@ -33,10 +33,28 @@
       #circle:hover path.fade {
         display: none;
       }
+
+      .tooltip{
+        position: absolute;
+        top: 0;
+        right: 0;
+        background-color: #000;
+        opacity: 0.5;
+        color: white;
+        padding: 5px;
+      }
+
+      
+      a, a:hover, a:visited{
+        color:white;
+        text-decoration: none;
+      }
+
+
     </style>
   </head>
   <body>
-    <div id="tooltip"></div>
+    <div class="tooltip"><a href='index.html'>V1</a> | <a href='index2.html'>V2</a></div>
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="js/underscore.js"></script>
     <script src="js/mapper.js"></script>

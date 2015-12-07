@@ -10,9 +10,28 @@ text {
 circle{
   cursor: pointer;
 }
+
+
+.tooltip{
+position: absolute;
+top: 0;
+right: 0;
+background-color: #000;
+opacity: 0.5;
+color: white;
+padding: 5px;
+}
+
+
+a, a:hover, a:visited{
+color:white;
+text-decoration: none;
+}
 </style>
 <body>
 <div style="width:860px;height860px;margin:0 auto;0" class="svg"></div>
+<div class="tooltip"><a href='index.html'>V1</a> | <a href='index2.html'>V2</a></div>
+
 <script src="http://d3js.org/d3.v3.js"></script>
 <script>
 
