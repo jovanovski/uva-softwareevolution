@@ -5,9 +5,9 @@ public abstract class Type1CloneA {
 		float sum = 0; // C1
 		float prod = 1;
 		for (int i = 0; i < n; i++) {
-			sum = sum + i;
-			prod = prod * i;
-			foo(sum,prod);
+		sum = sum + i;
+		prod = prod * i;
+		foo(sum,prod);
 		}
 	}
 }

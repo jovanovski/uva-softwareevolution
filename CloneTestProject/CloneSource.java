@@ -1,5 +1,3 @@
-package SE.Test.assets.TestProject;
-
 public abstract class CloneSource {
 	public abstract void foo (float sum, float prod);
 	
