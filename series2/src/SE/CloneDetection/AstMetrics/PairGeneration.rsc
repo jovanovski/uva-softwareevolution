@@ -25,7 +25,7 @@ public SegmentPairs generateType3ClonePairs(SegmentGroups segmentGroups, int edi
 
 public SegmentPairs generateClonePairsWithMatchFunc(SegmentGroups segmentGroups, bool(NodeList,NodeList) matchFunc) {
 	rel[Segment,Segment] pairs = {};
-	for (group <- segmentGroups) {
+	for (group <- segmentGroups) {		
 		while (!isEmpty(group)) {
 			<s1,group> = takeOneFrom(group);
 			<l1,ns1> = s1;			

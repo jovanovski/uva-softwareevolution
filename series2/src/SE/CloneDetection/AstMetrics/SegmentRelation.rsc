@@ -20,7 +20,7 @@ public data SegmentRelation
 public SegmentRelation getSegmentRelation(Segment s1, Segment s2) {
 	<loc1,ns1> = s1;
 	<loc2,ns2> = s2;
-	// must do this first as GT or LT do not check uri
+	// must do this first as < or > do not check uri
 	if (loc1.uri != loc2.uri) {
 		return disjoint();
 	} else if (loc1 == loc2) {
@@ -30,12 +30,25 @@ public SegmentRelation getSegmentRelation(Segment s1, Segment s2) {
 	} else if (loc1 < loc2) {
 		return containedIn();
 	} else if (loc1.offset <= loc2.offset && loc1.offset + loc1.length > loc2.offset) {
-		i = indexOf(s1,ns2[0]);
-		return overlapsRight(size(ns1)-i);
+		i = indexOfByNodeUrl(ns1, ns2[0]);
+		oc = size(ns1)-i;
+		return overlapsRight(oc);
 	} else if (loc2.offset <= loc1.offset && loc2.offset + loc2.length > loc1.offset) {
-		i = indexOf(ns2,s1[0]);
-		return overlapsLeft(size(ns2)-i);
+		i = indexOfByNodeUrl(ns2, ns1[0]);
+		oc = size(ns2)-i;
+		return overlapsLeft(oc);
 	} else {
 		return disjoint();
 	}
+}
+
+private int indexOfByNodeUrl(NodeList ns, node n) {
+	i = -1;
+	for (j <- [0..size(ns)]) {
+		if (ns[j]@src == n@src) {
+			i = j;
+			break;
+		}
+	}
+	return i;
 }

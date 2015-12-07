@@ -9,11 +9,13 @@ import Map;
 import IO;
 import SE::CloneDetection::Common;
 import SE::CloneDetection::AstMetrics::Common;
-import SE::CloneDetection::AstMetrics::Config;
 import SE::CloneDetection::AstMetrics::VectorGeneration;
 import SE::CloneDetection::AstMetrics::VectorGrouping;
 import SE::CloneDetection::AstMetrics::PairGeneration;
 import SE::CloneDetection::AstMetrics::PairMerging;
+
+int defaultEditDistancePerNrOfTokens = 30;
+int defaultMinStatements = 6;
 
 public LocClasses detectType1(M3 model, int minS=defaultMinStatements) {
 	vsm = doGenerateVectorsStep(model,minS);
@@ -59,33 +61,36 @@ public LocClasses detectType3(VectorSegmentsMap vs, int editDistancePerNrOfToken
 
 // common steps
 private VectorSegmentsMap doGenerateVectorsStep(M3 model, int minS) {
-	println("Generating vectors...");
+	print("Generating vectors... ");
 	vs = generateVectors(model,minS=minS);
-	println("<size(vs)> vectors generated");
+	println("<size(vs)> vectors generated.");
 	return vectorsToMap(vs);
 }
 
 private SegmentPairs doGeneratePairsStepWithFunc(SegmentGroups sgs, SegmentPairs (SegmentGroups) pairGenerationFunc) {
-	println("Generating clone pairs...");
+	print("Generating clone pairs... ");
 	ps = pairGenerationFunc(sgs);
-	println("<size(ps)> pairs generated");
+	println("<size(ps)> pairs generated.");
 	return ps;
 }
 
 private SegmentPairs doMergePairsStep(SegmentPairs ps) {
-	return ps;
-	println("Merging overlapping clone pairs...");
-	return mergeOverlappingClonePairs(ps);
+	print("Merging overlapping clone pairs... ");	
+	mps = mergeOverlappingClonePairs(ps);
+	println("done.");
+	return mps;
 }
 
 private rel[loc,loc] doSegmentToLocationPairsStep(SegmentPairs ps) {
-	println("Converting segment pairs to location pairs");
-	return segmentToLocationPairs(ps);
+	print("Converting segment pairs to location pairs... ");
+	lps = segmentToLocationPairs(ps);
+	println("done.");
+	return lps;
 }
 
 private LocClasses doLocPairsToLocClassesStep(LocPairs lps) {
-	println("Converting location pairs to location classes");
+	print("Converting location pairs to location classes... ");
 	lcs = locPairsToLocClasses(lps);
-	println("<size(lcs)> classes");
+	println("<size(lcs)> classes.");
 	return lcs;
 }

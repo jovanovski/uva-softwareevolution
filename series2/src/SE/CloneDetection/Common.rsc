@@ -10,20 +10,19 @@ public alias LocClasses = set[LocClass];
 
 public LocClasses locPairsToLocClasses(LocPairs lps) {
 	LocClasses lcs = {};
-	for (<l1,l2> <- lps) {
-		added = false;
-		for (lc <- lcs) {
-			if (l1 in lc || l2 in lc) {
-				lcs -= {lc};
-				lc += {l1,l2};
-				lcs += {lc};
-				added = true;
+	lps += {<l2,l1> | <l1,l2> <- lps}; // make symmetric in order to be able to traverse all relations in the clone group
+	while (!isEmpty(lps)) {
+		<<l1,l2>,lps> = takeOneFrom(lps);
+		cs = {l1,l2};
+		while (true) {		
+			mps = {<l,l3> | l <- cs, l3 <- lps[l]};
+			if (isEmpty(mps)) {
 				break;
-			}
-		}
-		if (!added) {
-			lcs += {{l1,l2}};
-		}
+			} 
+			lps -= mps;
+			cs += {l3 | <_,l3> <- mps};
+		}		
+		lcs += {cs};
 	}
 	return lcs;
 }
