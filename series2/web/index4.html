@@ -57,6 +57,8 @@ $.ajax({
   output = output + "<h1>"+files[files.length-1]+"</h1>";
   console.log(spl.length);
   for (var i=0;i<spl.length;i++) {
+    spl[i] = spl[i].replace(/>/, "&lt;");
+    spl[i] = spl[i].replace(/</, "&gt;");
     if(i>=start && i<=end){
       output = output + ( (i+1) + ": "+spl[i]+"<br/>");
     }
