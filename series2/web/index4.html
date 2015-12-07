@@ -55,17 +55,22 @@ $.ajax({
   var end = parseInt(getParameterByName("end"))-1;
   var output = "";
   output = output + "<h1>"+files[files.length-1]+"</h1>";
-  output = output + "<h2 style='color:red'>If there is a '{' or a '}' on the first/last line, matching could start with an offset to it, and not include the whole line from the start!</h2>";
   console.log(spl.length);
   for (var i=0;i<spl.length;i++) {
+    spl[i] = spl[i].replace(/>/, "&lt;");
+    spl[i] = spl[i].replace(/</, "&gt;");
     if(i>=start && i<=end){
       output = output + ( (i+1) + ": "+spl[i]+"<br/>");
     }
-    // else if((i>start-10 && i<start) || (i<end+10 && i>end)){
-    //   output = output + "<div style='opacity:0.5'>"+i+": "+spl[i]+"</div>";
-    // }
+    else if((i>start-10 && i<start) || (i<end+10 && i>end)){
+      output = output + "<div style='opacity:0.3'>"+(i+1)+": "+spl[i]+"</div>";
+    }
   }
+
+  output = output + "<p style='color:red'>Note: If there is a '{' or a '}' on the first/last line, matching could start with an offset to it, and not include the whole line from the start!</p>";
   $(".output").append(output);
 });
 
 </script>
+</body>
+</html>

@@ -8,6 +8,11 @@ html, body{
   width: 100%;
 }
 
+a, a:hover, a:visited{
+  color:white;
+  text-decoration: none;
+}
+
 text {
   font: 10px sans-serif;
 }
@@ -22,6 +27,7 @@ text {
   color: white;
   text-align: center;
   box-shadow: 7px 0 20px #000;
+  z-index: 10;  
 }
 
 .file2{
@@ -45,13 +51,13 @@ text {
 
 .scroller, .scrollerIn{
   height: 100%;
-  overflow: hidden;
   float: left;
 }
 
 .scroller{
   width: calc(100% - 200px);
   float: right;
+  overflow: auto;
 }
 
 .tooltip{
@@ -66,11 +72,12 @@ text {
 
 </style>
 <body>
+
 <div class="file1" file='main'></div>
 <div class="scroller">
 <div class="scrollerIn"></div>
 </div>
-<div class="tooltip"></div>
+<div class="tooltip"><a href='index.html'>V1</a> | <a href='index2.html'>V2</a> | <span class="tooltipl"></span></div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <script>
 
@@ -136,8 +143,7 @@ function addClone(div, start, end, size, linkID, color, filename){
 
   var fHeight = $("[file='"+div+"']").height();
   var marginC = cloneNum*10;
-  //cloneNum++;
-  $("[file='"+div+"']").append("<a href='index4.html?file="+filename+"&start="+start+"&end="+end+"'><div class='clone' style='margin-left:"+marginC+"px; position:absolute; top: "+(fHeight/100 * topP)+"px; height:"+(bottomP-topP)+"%; background-color:"+color+"' title='"+start+", "+end+"' linkID='"+linkID+"'></div></a>");
+  $("[file='"+div+"']").append("<div onclick='popitup(\"index4.html?file="+filename+"&start="+start+"&end="+end+"\")' class='clone' style='margin-left:"+marginC+"px; position:absolute; top: "+(fHeight/100 * topP)+"px; height:"+(bottomP-topP)+"%; background-color:"+color+"' title='"+start+", "+end+"' linkID='"+linkID+"'></div>");
 
 }
 
@@ -147,7 +153,7 @@ function setHandler(){
     function(){
       $(".clone").css("opacity", "0.2");
       $(".clone[linkID='"+$(this).attr('linkID')+"']").css("opacity", "1");
-      $(".tooltip").text($(this).attr('title'));
+      $(".tooltipl").text($(this).attr('title'));
   }, function() {
       $(".clone").css("opacity", "0.9");
     }
@@ -168,6 +174,12 @@ function getRandomColor() {
         color += letters[Math.floor(Math.random() * 16)];
     }
     return color;
+}
+
+function popitup(url) {
+  newwindow=window.open(url,'name','height=600,width=450,scrollbars=yes');
+  if (window.focus) {newwindow.focus()}
+  return false;
 }
 
 </script>
