@@ -1,5 +1,3 @@
-package SE.Test.assets.TestProject.Type2Clones;
-
 public abstract class Type2CloneB {
 	public abstract void foo (float sum, float prod);
 	
