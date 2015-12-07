@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="src" path="Original"/>
+	<classpathentry kind="src" path="Type1Clones"/>
 	<classpathentry kind="src" path="Type2Clones"/>
+	<classpathentry kind="src" path="Type3Clones"/>
 	<classpathentry kind="src" path="Type4Clones"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
