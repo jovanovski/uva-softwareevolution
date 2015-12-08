@@ -12,17 +12,17 @@ public alias VisOutput = map[loc, map[loc, list[tuple[tuple[int, int], tuple[int
 public LocClasses locPairsToLocClasses(LocPairs lps) {
 	LocClasses lcs = {};
 	while (!isEmpty(lps)) {
-		<<l1,l2>,lps> = takeOneFrom(lps);
-		cs = {l1,l2};
-		while (true) {		
-			mps = {<l,l3> | l <- cs, l3 <- lps[l]};
-			if (isEmpty(mps)) {
-				break;
-			} 
-			lps -= mps;
-			cs += {l3 | <_,l3> <- mps};
+		<l1,l2> = getOneFrom(lps);
+		lc = {};
+		toAdd = {l1,l2};
+		while (!isEmpty(toAdd)) {	
+			<l,toAdd> = takeOneFrom(toAdd);
+			lc += {l};
+			l3s = lps[l];	
+			toAdd += (l3s - lc);	// add new reachable locations to toAdd queue
+			lps -= {<l,l3> | l3 <- l3s};
 		}		
-		lcs += {cs};
+		lcs += {lc};
 	}
 	return lcs;
 }
