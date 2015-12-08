@@ -12,9 +12,97 @@ import util::ShellExec;
 
 import SE::Type1::Detector;
 import SE::CloneDetection::Common;
+import SE::CloneDetection::AstMetrics;
+
+
+//for type2
+map[loc, int] fileSizes = ();
+bool doingType2 = false;
+
+public void visualizeType2(M3 model){
+	println("Started visualization prep");
+	doingType2 = true;
+	LocClasses detect = detectType2(model);
+	VisOutput rels = ();
+	for(group <- detect){
+		for(line <- group){
+			for(line2 <- group){
+				loc f1 = |<line.scheme>:///| + line.path;
+				loc f2 = |<line2.scheme>:///| + line2.path;
+				if(line!=line2){
+					if(f1 in rels){
+						if(f2 in rels[f1]){
+							
+							println("doing file1 " + line2.path);
+							
+							rels[f1][f2] += <<line.begin.line,line.end.line>, <line2.begin.line,line2.end.line>>;
+							
+						}
+						else{
+							rels[f1][f2] = [];
+							int file2Size;
+							
+							if(f2 in fileSizes){
+								file2Size = fileSizes[f2];
+							}
+							else{
+								file2Size = fileSize(f2);
+								fileSizes[f2] = file2Size;							
+							}
+							
+							println("doing file2 " + line2.path);
+							rels[f1][f2] += <<line.begin.line,line.end.line>, <line2.begin.line,line2.end.line>>;
+							
+						}
+					}
+					else{
+						rels[f1] = ();
+						rels[f1][f2] = [];
+						
+						int file1Size;
+						int file2Size;
+						
+						if(f1 in fileSizes){
+							file1Size = fileSizes[f1];
+						}
+						else{
+							file1Size = fileSize(f1);
+							fileSizes[f1] = file1Size;
+							
+						}
+						
+						if(f2 in fileSizes){
+							file2Size = fileSizes[f2];
+						}
+						else{
+							file2Size = fileSize(f2);
+							fileSizes[f2] = file2Size;
+							
+						}
+						
+							println("doing file3 " + line2.path);
+						rels[f1][f2] += <<line.begin.line,line.end.line>, <line2.begin.line,line2.end.line>>;
+					}
+				}
+			}
+		}
+	}
+	
+	str genData = rascalToJson(rels);
+	str genDataMin = rascalToJsonMin(rels);
+	writeFile(|project://uva-se-series2/web/data/gendata.json|, genData);
+	writeFile(|project://uva-se-series2/web/data/gendatamin.json|, genDataMin);
+	createProcess("gorjan.bat");
+}
+
+public int fileSize(loc file){
+	return size(split("\n", readFile(file)));
+}
 
 public void visualizeType1(M3 model){
-	VisOutput rels = detectType1(model);
+
+	doingType2 = false;
+	VisOutput rels = detectType1G(model);
 	str genData = rascalToJson(rels);
 	str genDataMin = rascalToJsonMin(rels);
 	writeFile(|project://uva-se-series2/web/data/gendata.json|, genData);
@@ -28,8 +116,13 @@ public str rascalToJsonMin(VisOutput rels){
 	
 	for(main <- rels){ //all main files
 		res+="{";
-		res+="\"name\":\"<main.path>\",";
-		res+="\"size\":<locSize[main]>,";
+		res+="\"name\":\"<main.path>\",";		
+		if(doingType2){
+			res+="\"size\":<fileSizes[main]>,";
+		}
+		else{
+			res+="\"size\":<locSize[main]>,";
+		}
 		res+="\"imports\":[";
 		map[loc, list[tuple[tuple[int, int], tuple[int, int]]]] subMains = rels[main];
 		loc lastSubMain;
@@ -68,13 +161,23 @@ public str rascalToJson(VisOutput rels){
 	for(main <- rels){ //all main files
 		res+="{";
 		res+="\"name\":\"<main.path>\",";
-		res+="\"size\":<locSize[main]>,";
+		if(doingType2){
+			res+="\"size\":<fileSizes[main]>,";
+		}
+		else{
+			res+="\"size\":<locSize[main]>,";
+		}
 		res+="\"imports\":[";
 		map[loc, list[tuple[tuple[int, int], tuple[int, int]]]] subMains = rels[main];
 		for(subMain <- subMains){ //all imports
 			list[tuple[tuple[int, int], tuple[int, int]]] links = subMains[subMain];
 			for(link <- links){
-				res+="{\"file\":\"<subMain.path>\", \"size\":<locSize[subMain]>, \"startF\": <link[0][0]>, \"endF\": <link[0][1]>, \"startT\": <link[1][0]>, \"endT\": <link[1][1]>, \"lines\":<link[0][1] - link[0][0] + 1>},";
+				if(doingType2){
+					res+="{\"file\":\"<subMain.path>\", \"size\":<fileSizes[subMain]>, \"startF\": <link[0][0]>, \"endF\": <link[0][1]>, \"startT\": <link[1][0]>, \"endT\": <link[1][1]>, \"lines\":<link[0][1] - link[0][0] + 1>},";
+				}
+				else{
+					res+="{\"file\":\"<subMain.path>\", \"size\":<locSize[subMain]>, \"startF\": <link[0][0]>, \"endF\": <link[0][1]>, \"startT\": <link[1][0]>, \"endT\": <link[1][1]>, \"lines\":<link[0][1] - link[0][0] + 1>},";
+				}
 			}	
 		}
 		res = substring(res, 0 , size(res)-1);

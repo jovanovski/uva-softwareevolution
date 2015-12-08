@@ -13,7 +13,7 @@ circle{
 
 
 .tooltip{
-position: absolute;
+position: fixed;
 top: 0;
 right: 0;
 background-color: #000;
@@ -179,8 +179,8 @@ function classes(root) {
   
   var newClasses = [];
 
-  var le = 244;
-  if(classes.length<244) le = classes.length;
+  var le = 344;
+  if(classes.length<344) le = classes.length;
   for(var i=0;i<le;i++){
     newClasses[i]= classes[i];
   }

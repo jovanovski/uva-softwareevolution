@@ -10,6 +10,7 @@ html, body{
 </style>
 <body>
 <div class="output"></div>
+<p style='color:red'>Note: If there is a '{' or a '}' on the first/last line, matching could start with an offset to it, and not include the whole line from the start!</p>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <script>
 
@@ -19,13 +20,13 @@ function getRelativeURI(file){
   var i = 0;
   var spos;
   for(i=0;i<sp.length;i++){
-    if(sp[i]=="src"){
+    if(sp[i]=="hsqldb-2.3.1" || sp[i]=="smallsql0.21_src" || sp[i]=="CloneTestProject" || sp[i]=="testproj"){
       spos = i;
       break;
     }
   }
   var res = "";
-  for(i=spos-1;i<sp.length;i++){
+  for(i=spos;i<sp.length;i++){
     res+=sp[i]+"/";
   }
 
@@ -67,7 +68,6 @@ $.ajax({
     }
   }
 
-  output = output + "<p style='color:red'>Note: If there is a '{' or a '}' on the first/last line, matching could start with an offset to it, and not include the whole line from the start!</p>";
   $(".output").append(output);
 });
 
