@@ -23,7 +23,7 @@ public SegmentGroups vectorSegmentsMapToSegmentGroups(VectorSegmentsMap vsm) = {
 
 public SizeVectorsMap groupVectorsBySize(VectorGroup vs) {
 	SizeVectorsMap svm = ();
-	for (<v,_> <- vs) {
+	for (v <- vs) {
 		s = sum(v);
 		svm[s] = s in svm ? svm[s] + {v} : {v};
 	}
@@ -39,7 +39,7 @@ public VectorGroups groupVectorsBySimilarity(VectorGroup vs, int hammingDistance
 			<v1,vrem> = takeOneFrom(svm[s]);
 			VectorGroup group = {v1};
 			svm[s] = vrem;
-			for (i <- [s..s+maxHammingDistance], i in vm) {
+			for (i <- [s..s+maxHammingDistance], i in svm) {
 				group += {v2 | v2 <- svm[i], isHammingDistanceLessThan(size(v1),v1,v2,maxHammingDistance)};
 			}
 			gs += {group};
@@ -59,6 +59,6 @@ private bool isHammingDistanceLessThan(int vSize, Vector v1, Vector v2, int dist
 	return true;
 }
 
-public SegmentGroups getSegmentsForVectorGroups(VectorSegmentsMap vsm, VectorGroups) {
-	return {{s | v <- vectorGroup, s <- vsm[v]} | vectorGroup <- vectorGroups};
+public SegmentGroups getSegmentsForVectorGroups(VectorSegmentsMap vsm, VectorGroups vgs) {
+	return {{s | v <- vg, s <- vsm[v]} | vg <- vgs};
 }

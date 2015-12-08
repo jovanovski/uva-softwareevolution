@@ -29,9 +29,7 @@ public LocClasses detectType1(list[node] asts, int minS=defaultMinStatements) {
 public LocClasses detectType1(VectorSegmentsMap vsm) {
 	sgs = vectorSegmentsMapToSegmentGroups(vsm);
 	ps = doGeneratePairsStepWithFunc(sgs, generateClonePairsByEquivalence);
-	ps = doMergePairsStep(ps);
-	lps = doSegmentToLocationPairsStep(ps);
-	lcs = doLocPairsToLocClassesStep(lps);
+	lcs = doPostProcessingSteps(ps);
 	return lcs;
 }
 
@@ -44,31 +42,26 @@ public LocClasses detectType2(list[node] asts, int minS=defaultMinStatements) {
 	vsm = doGenerateVectorsStep(asts,minS);
 	return detectType1(vsm,minS=minS);
 }
-//public LocClasses detectType2(VectorSegmentsMap vsm) {
-//	sgs = vectorSegmentsMapToSegmentGroups(vsm);
-//	ps = doGeneratePairsStepWithFunc(sgs, generateType2ClonePairs);
-//	ps = doMergePairsStep(ps);
-//	return ps;
-//}
 
 public LocClasses detectType3(M3 model, int minS=defaultMinStatements, int editDistancePerNrOfTokens=defaultEditDistancePerNrOfTokens) {
 	asts = doGenerateAstsStep(model);
-	return detectType2(asts,minS=minS,editDistancePerNrOfTokens=editDistancePerNrOfTokens);
+	return detectType3(asts,minS=minS,editDistancePerNrOfTokens=editDistancePerNrOfTokens);
 }
 
-public LocClasses detectType3(VectorSegmentsMap vs, int editDistancePerNrOfTokens=defaultEditDistancePerNrOfTokens) {
+public LocClasses detectType3(list[node] asts, int minS=defaultMinStatements, int editDistancePerNrOfTokens=defaultEditDistancePerNrOfTokens) {
 	asts = doAstAnonymizationStep(asts);
 	vsm = doGenerateVectorsStep(asts,minS);
 	print("Grouping vectors by hamming distance per nr of tokens... ");
-	vgs = groupVectorsBySimilarity(vs, editDistancePerNrOfTokens);
-	println("<size(vgs)> vector groups");
-	println("Translating vector groups to segment groups...");
-	sgs = getSegmentsForVectorGroups(vm, vgs);
+	vgs = groupVectorsBySimilarity(domain(vsm), editDistancePerNrOfTokens);
+	println("<size(vgs)> vector groups.");
+	print("Translating vector groups to segment groups...");
+	sgs = getSegmentsForVectorGroups(vsm, vgs);
+	println("done.");
 	ps = doGeneratePairsStepWithFunc(sgs, SegmentPairs (SegmentGroups) {
-		return generateType3ClonePairs(sgs, editDistancePerNrOfTokens);
+		return generateClonePairsBySimilarity(sgs, editDistancePerNrOfTokens);
 	});
-	mps = doMergePairsStep(ps);
-	return mps;
+	lcs = doPostProcessingSteps(ps);
+	return lcs;
 }
 
 // common steps
@@ -100,21 +93,13 @@ private SegmentPairs doGeneratePairsStepWithFunc(SegmentGroups sgs, SegmentPairs
 	return ps;
 }
 
-private SegmentPairs doMergePairsStep(SegmentPairs ps) {
+private LocClasses doPostProcessingSteps(SegmentPairs ps) {
 	print("Merging overlapping clone pairs... ");	
 	ps = mergeOverlappingClonePairs(ps);
 	println("<size(ps)> pair(s) remaining.");
-	return ps;
-}
-
-private rel[loc,loc] doSegmentToLocationPairsStep(SegmentPairs ps) {
 	print("Converting segment pairs to location pairs... ");
 	lps = segmentToLocationPairs(ps);
 	println("done.");
-	return lps;
-}
-
-private LocClasses doLocPairsToLocClassesStep(LocPairs lps) {
 	print("Converting location pairs to location classes... ");
 	lcs = locPairsToLocClasses(lps);
 	println("<size(lcs)> class(es).");

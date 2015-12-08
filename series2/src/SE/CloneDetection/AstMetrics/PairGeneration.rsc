@@ -17,8 +17,9 @@ public SegmentPairs generateClonePairsByEquivalence(SegmentGroups segmentGroups)
 	return s1 == s2;
 });
 
-public SegmentPairs generateClonePairsByEditDistance(SegmentGroups segmentGroups, int editDistancePerNrOfTokens) = generateClonePairsWithMatchFunc(segmentGroups, bool (NodeList s1, NodeList s2) {
-	return areType3Equivalent(s1,s2,editDistancePerNrOfTokens);
+public SegmentPairs generateClonePairsBySimilarity(SegmentGroups segmentGroups, int editDistancePerNrOfTokens) = generateClonePairsWithMatchFunc(segmentGroups, bool (NodeList s1, NodeList s2) {
+	int maxDistance = floor(max(countRelevantNodes(s1), countRelevantNodes(s2)) / editDistancePerNrOfTokens);
+	return isEditDistanceLessThan(s1,s2,maxDistance);
 });
 
 public SegmentPairs generateClonePairsWithMatchFunc(SegmentGroups segmentGroups, bool(NodeList,NodeList) matchFunc) {
@@ -26,13 +27,27 @@ public SegmentPairs generateClonePairsWithMatchFunc(SegmentGroups segmentGroups,
 	for (group <- segmentGroups) {		
 		while (!isEmpty(group)) {
 			<s1,group> = takeOneFrom(group);
-			<l1,ns1> = s1;			
+			<l1,ns1> = s1;
 			matches = {s2 | s2:<l2,ns2> <- group, getSegmentRelation(s1,s2) == disjoint(), matchFunc(ns1,ns2)};
 			pairs += {<s1,s2> | s2:<l2,ns2> <- matches};
 		}
 	}
 	pairs += {<s2,s1> | <s1,s2> <- pairs};	// make symmetric
 	return pairs;
+}
+
+public bool isEditDistanceLessThan(value v1, value v2, int maxDistance) {
+	return false;
+}
+
+private int countRelevantNodes(list[node] ns) {
+	c = 0;
+	visit (ns) {
+		case Declaration: c+= 1;
+		case Statement: c += 1;
+		case Expression: c += 1;
+	}
+	return c;
 }
 
 //public bool areType2Equivalent(value v1, value v2) {
@@ -68,7 +83,3 @@ public SegmentPairs generateClonePairsWithMatchFunc(SegmentGroups segmentGroups,
 //	return true;
 //}
 //private bool areGenericNodesType2Equivalent(node n1, node n2) = getName(n1) == getName(n2) && areType2Equivalent(getChildren(n1), getChildren(n2));
-
-public bool isEditDistanceLessThan(value v1, value v2, int maxDistance) {
-	return false;
-}
