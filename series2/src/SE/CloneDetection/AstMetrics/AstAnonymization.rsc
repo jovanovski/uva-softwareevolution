@@ -9,8 +9,14 @@ public list[node] anonymizeIdentifiersLiteralsAndTypes(list[node] asts) = [anony
 public node anonymizeIdentifiersLiteralsAndTypes(node ast) {
 	return visit(ast){
 		// identifiers - declaration
-   		case \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl) => \method(\return, "me", parameters, exceptions, impl)
-   		case \method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions) => \method(\return, "me", parameters, exceptions)
+   		case n1:\method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl) => {
+   			n2 = \method(\return, "me", parameters, exceptions, impl);
+   			n2@src = n1@src;
+   		}
+   		case n1:\method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions) => {
+   			n2 = \method(\return, "me", parameters, exceptions);
+   			n2@src = n1@src;   
+   		}
 		
 		// identifiers - expression
 		case \fieldAccess(bool isSuper, Expression expression, _) => \fieldAccess(isSuper, expression, "fa")
@@ -22,15 +28,16 @@ public node anonymizeIdentifiersLiteralsAndTypes(node ast) {
 		case \simpleName(_) => \simpleName("p")
 		
 		// identifiers - statement
-   		case \label(_, Statement body) => \label("la", body)
-		
+   		case n1:\label(_, Statement body) => {
+   			n2 = \label("la", body); 
+   			n2@src = n1@src; 
+		}		
 		// literals
 		case \characterLiteral(_) => \characterLiteral("a")
 		case \booleanLiteral(_) => \booleanLiteral(true)
 		case \stringLiteral(_) => \stringLiteral("ab")
 		
 		// types
-		case Type t => wildcard()
-		
+		case Type t => wildcard()		
 	}
 }
