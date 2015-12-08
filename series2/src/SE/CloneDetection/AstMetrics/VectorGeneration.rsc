@@ -20,13 +20,9 @@ public alias VectorTemplate = list[NodeType];
 public alias NodeCount = map[NodeType, int];
 public alias NodeCounts = rel[NodeCount,Segment];
 
-public Vectors generateVectors(M3 model, int minS=6) = generateVectors(model, getVectorTemplate(model), minS=minS);
-public Vectors generateVectors(M3 model, VectorTemplate template, int minS=6) {
-	return generateVectors([getMethodASTEclipse(meth,model=model) | meth <- methods(model)], template, minS=minS);
-}
 public Vectors generateVectors(list[node] ns, int minS=6) = generateVectors(ns, getVectorTemplate(ns), minS=minS);
 public Vectors generateVectors(list[node] ns, VectorTemplate template, int minS=6) {
-	return ({} | it + generateVectors(n, template,minS=minS) | n <- ns);
+	return {v | n <- ns, v <- generateVectors(n, template,minS=minS)};
 }
 public Vectors generateVectors(node n, int minS=6) = generateVectors(n, getVectorTemplate(n), minS=minS);
 public Vectors generateVectors(node n, VectorTemplate template, int minS=6) {
@@ -42,6 +38,7 @@ public set[NodeType] getNodeTypes(M3 model) {
 	}
 	return nodeTypes;
 }
+
 public set[NodeType] getNodeTypes(value v) {
 	set[NodeType] nodeTypes = {};
 	visit (v) {
