@@ -99,9 +99,9 @@ private SegmentPairs doGeneratePairsStepWithFunc(SegmentGroups sgs, SegmentPairs
 
 private SegmentPairs doMergePairsStep(SegmentPairs ps) {
 	print("Merging overlapping clone pairs... ");	
-	mps = mergeOverlappingClonePairs(ps);
-	println("done.");
-	return mps;
+	ps = mergeOverlappingClonePairs(ps);
+	println("<size(ps)> pair(s) remaining.");
+	return ps;
 }
 
 private rel[loc,loc] doSegmentToLocationPairsStep(SegmentPairs ps) {
