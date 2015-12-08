@@ -50,11 +50,17 @@
         text-decoration: none;
       }
 
+      .svg{
+        width: 1800px;
+        height: 1600px;
+        margin: 0 auto;
+      }
 
     </style>
   </head>
   <body>
     <div class="tooltip"><a href='index.html'>V1</a> | <a href='index2.html'>V2</a></div>
+    <div class="svg"></div>
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script src="js/underscore.js"></script>
     <script src="js/mapper.js"></script>
@@ -94,6 +100,8 @@
       });
 
       function name(name) {
+        //sp = name.split("/");
+        //return sp[sp.length - 1];
         return name;
       }
       //*******************************************************************
@@ -114,7 +122,7 @@
             .innerRadius(r0)
             .outerRadius(r0 + 20);
 
-        svg = d3.select("body").append("svg:svg")
+        svg = d3.select(".svg").append("svg:svg")
             .attr("width", w)
             .attr("height", h)
           .append("svg:g")
@@ -133,6 +141,7 @@
             .attr("class", "group")
             .style("cursor", "pointer")
             .on("mouseover", mouseover)
+            .attr("title", function(d) { return rdr(d).gname; })
             .on("mouseout", function (d) { d3.select("#tooltip").style("visibility", "hidden") })
             .on("click", function(d){ window.location = "index3.html?file=" + rdr(d).gname;});
 
@@ -148,7 +157,6 @@
             .style("font-size", "10px")
             .attr("fill", function(d){ 
               var num = grel[rdr(d).gname]; 
-              console.log(num);
               if(num!==undefined) {
                 if(num <= 50) return "#000";
                 else if(num <= 200) return "#FF9D00";
@@ -156,13 +164,21 @@
               }
               return "#000";
             })
+            .style("display", function(d){
+              var num = grel[rdr(d).gname]; 
+              if(num!==undefined) {
+                if(num <= 50) return "none";
+              }
+              return "block";
+            })
             .attr("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
             .attr("transform", function(d) {
               return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
                   + "translate(" + (r0 + 26) + ")"
                   + (d.angle > Math.PI ? "rotate(180)" : "");
             })
-            .text(function(d) { return rdr(d).gname; });
+            .attr("title", function(d) { return rdr(d).gname; })
+            .text(function(d) { sp = rdr(d).gname.split("/"); return sp[sp.length-1]; });
 
           var chordPaths = svg.selectAll("path.chord")
                 .data(chord.chords())

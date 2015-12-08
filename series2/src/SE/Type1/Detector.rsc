@@ -17,7 +17,7 @@ import SE::CloneDetection::Common;
 
 public map[loc, int] locSize = ();
 
-public VisOutput detectType1(M3 model){
+public VisOutput detectType1G(M3 model){
 	datetime startTime = now();
 	println("<now()> - Type1 detection started");
 	//set[loc] units = classes(model);
