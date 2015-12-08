@@ -13,10 +13,11 @@ import util::ShellExec;
 import DateTime;
 
 import SE::Type1::CodePrep;
+import SE::CloneDetection::Common;
 
 public map[loc, int] locSize = ();
 
-public map[loc, map[loc, list[tuple[tuple[int, int], tuple[int, int]]]]] detectType1(M3 model){
+public VisOutput detectType1(M3 model){
 	datetime startTime = now();
 	println("<now()> - Type1 detection started");
 	//set[loc] units = classes(model);
@@ -54,12 +55,12 @@ public map[loc, map[loc, list[tuple[tuple[int, int], tuple[int, int]]]]] detectT
 
 
 
-public map[loc, map[loc, list[tuple[tuple[int, int], tuple[int, int]]]]] duplicationInLines(list[lrel[loc, tuple[int, int], str]] lines, M3 model, map[loc, int] locSize, datetime startTime) {
+public VisOutput duplicationInLines(list[lrel[loc, tuple[int, int], str]] lines, M3 model, map[loc, int] locSize, datetime startTime) {
 	int dup = 0;
 	map[list[str], lrel[loc, tuple[int, int], str]] myMap = ();
 	set[tuple[loc,tuple[int, int],str]] dupLines = {};
 	map[tuple[loc, loc], int] paths = ();
-	map[loc, map[loc, list[tuple[tuple[int, int], tuple[int, int]]]]] cloneClasses = ();
+	VisOutput cloneClasses = ();
 	tuple[tuple[int, int], tuple[int, int]] lastSaved;
 	loc lastLoc;
 	for(lines6 <- lines){
