@@ -28,7 +28,7 @@ public LocClasses detectType1(list[node] asts, int minS=defaultMinStatements) {
 }
 public LocClasses detectType1(VectorSegmentsMap vsm) {
 	sgs = vectorSegmentsMapToSegmentGroups(vsm);
-	ps = doGeneratePairsStepWithFunc(sgs, generateType1ClonePairs);
+	ps = doGeneratePairsStepWithFunc(sgs, generateClonePairsByEquivalence);
 	ps = doMergePairsStep(ps);
 	lps = doSegmentToLocationPairsStep(ps);
 	lcs = doLocPairsToLocClassesStep(lps);
@@ -52,13 +52,16 @@ public LocClasses detectType2(list[node] asts, int minS=defaultMinStatements) {
 //}
 
 public LocClasses detectType3(M3 model, int minS=defaultMinStatements, int editDistancePerNrOfTokens=defaultEditDistancePerNrOfTokens) {
-	vsm = doGenerateVectorsStep(model,minS);
-	return detectType3(vsm,editDistancePerNrOfTokens=editDistancePerNrOfTokens);
+	asts = doGenerateAstsStep(model);
+	return detectType2(asts,minS=minS,editDistancePerNrOfTokens=editDistancePerNrOfTokens);
 }
 
 public LocClasses detectType3(VectorSegmentsMap vs, int editDistancePerNrOfTokens=defaultEditDistancePerNrOfTokens) {
-	println("Grouping vectors by hamming distance per nr of tokens...");
+	asts = doAstAnonymizationStep(asts);
+	vsm = doGenerateVectorsStep(asts,minS);
+	print("Grouping vectors by hamming distance per nr of tokens... ");
 	vgs = groupVectorsBySimilarity(vs, editDistancePerNrOfTokens);
+	println("<size(vgs)> vector groups");
 	println("Translating vector groups to segment groups...");
 	sgs = getSegmentsForVectorGroups(vm, vgs);
 	ps = doGeneratePairsStepWithFunc(sgs, SegmentPairs (SegmentGroups) {
