@@ -30,11 +30,11 @@ public SegmentRelation getSegmentRelation(Segment s1, Segment s2) {
 	} else if (loc1 < loc2) {
 		return containedIn();
 	} else if (loc1.offset <= loc2.offset && loc1.offset + loc1.length > loc2.offset) {
-		i = indexOfByNodeUrl(ns1, ns2[0]);
+		i = indexOfByNodeSrc(ns1, ns2[0]);
 		oc = size(ns1)-i;
 		return overlapsRight(oc);
 	} else if (loc2.offset <= loc1.offset && loc2.offset + loc2.length > loc1.offset) {
-		i = indexOfByNodeUrl(ns2, ns1[0]);
+		i = indexOfByNodeSrc(ns2, ns1[0]);
 		oc = size(ns2)-i;
 		return overlapsLeft(oc);
 	} else {
@@ -42,7 +42,7 @@ public SegmentRelation getSegmentRelation(Segment s1, Segment s2) {
 	}
 }
 
-private int indexOfByNodeUrl(NodeList ns, node n) {
+private int indexOfByNodeSrc(NodeList ns, node n) {
 	i = -1;
 	for (j <- [0..size(ns)]) {
 		if (ns[j]@src == n@src) {

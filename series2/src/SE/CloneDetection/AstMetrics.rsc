@@ -98,7 +98,7 @@ private LocClasses doPostProcessingSteps(SegmentPairs ps) {
 	ps = mergeOverlappingClonePairs(ps);
 	println("<size(ps)> pair(s) remaining.");
 	print("Converting segment pairs to location pairs... ");
-	lps = segmentToLocationPairs(ps);
+	lps = segmentToLocationPairs(ps);	
 	println("done.");
 	print("Converting location pairs to location classes... ");
 	lcs = locPairsToLocClasses(lps);

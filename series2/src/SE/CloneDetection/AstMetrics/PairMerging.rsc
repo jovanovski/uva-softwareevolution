@@ -17,7 +17,7 @@ alias UriIndexedSegmentPairs = map[str,map[str,SegmentPairs]];
 	
 public SegmentPairs mergeOverlappingClonePairs(SegmentPairs pairs) {
 	SegmentPairs mergedPairs = {};
-	UriIndexedSegmentPairs fromToUriPairs = indexPairsByUris(pairs);
+	UriIndexedSegmentPairs fromToUriPairs = indexPairsByUris(pairs);	
 	for (uri1 <- fromToUriPairs) {
 		toUriPairs = fromToUriPairs[uri1];
 		for (uri2 <- toUriPairs) {

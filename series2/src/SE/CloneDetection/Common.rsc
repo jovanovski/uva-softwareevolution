@@ -11,6 +11,7 @@ public alias VisOutput = map[loc, map[loc, list[tuple[tuple[int, int], tuple[int
 
 public LocClasses locPairsToLocClasses(LocPairs lps) {
 	LocClasses lcs = {};
+	lps += {<l2,l1> | <l1,l2> <- lps};	// make symmetric - our clone classes combine all relations into a single class, even though the clone relation might not be transitive
 	while (!isEmpty(lps)) {
 		<l1,l2> = getOneFrom(lps);
 		lc = {};

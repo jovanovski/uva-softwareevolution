@@ -12,6 +12,7 @@ import Type;
 import util::Math;
 import SE::CloneDetection::AstMetrics::Common;
 import SE::CloneDetection::AstMetrics::SegmentRelation;
+import SE::CloneDetection::AstMetrics::AstEditDistance;
 
 public SegmentPairs generateClonePairsByEquivalence(SegmentGroups segmentGroups) = generateClonePairsWithMatchFunc(segmentGroups, bool (NodeList s1, NodeList s2) {
 	return s1 == s2;
@@ -19,7 +20,7 @@ public SegmentPairs generateClonePairsByEquivalence(SegmentGroups segmentGroups)
 
 public SegmentPairs generateClonePairsBySimilarity(SegmentGroups segmentGroups, int editDistancePerNrOfTokens) = generateClonePairsWithMatchFunc(segmentGroups, bool (NodeList s1, NodeList s2) {
 	int maxDistance = floor(max(countRelevantNodes(s1), countRelevantNodes(s2)) / editDistancePerNrOfTokens);
-	return isEditDistanceLessThan(s1,s2,maxDistance);
+	return isEditDistanceLessThan(s1[1],s2[1],maxDistance);
 });
 
 public SegmentPairs generateClonePairsWithMatchFunc(SegmentGroups segmentGroups, bool(NodeList,NodeList) matchFunc) {
@@ -28,16 +29,10 @@ public SegmentPairs generateClonePairsWithMatchFunc(SegmentGroups segmentGroups,
 		while (!isEmpty(group)) {
 			<s1,group> = takeOneFrom(group);
 			<l1,ns1> = s1;
-			matches = {s2 | s2:<l2,ns2> <- group, getSegmentRelation(s1,s2) == disjoint(), matchFunc(ns1,ns2)};
-			pairs += {<s1,s2> | s2:<l2,ns2> <- matches};
+			pairs += {l1.uri < l2.uri || (l1.uri == l2.uri && l1.offset <= l2.offset) ? <s1,s2> : <s2,s1> | s2:<l2,ns2> <- group, getSegmentRelation(s1,s2) == disjoint(), matchFunc(ns1,ns2)};
 		}
 	}
-	pairs += {<s2,s1> | <s1,s2> <- pairs};	// make symmetric
 	return pairs;
-}
-
-public bool isEditDistanceLessThan(value v1, value v2, int maxDistance) {
-	return false;
 }
 
 private int countRelevantNodes(list[node] ns) {
