@@ -20,6 +20,7 @@ map[loc, int] fileSizes = ();
 bool doingType2 = false;
 
 public void visualizeType2(M3 model){
+	println("Started visualization prep");
 	doingType2 = true;
 	LocClasses detect = detectType2(model);
 	VisOutput rels = ();

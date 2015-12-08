@@ -20,13 +20,13 @@ function getRelativeURI(file){
   var i = 0;
   var spos;
   for(i=0;i<sp.length;i++){
-    if(sp[i]=="src"){
+    if(sp[i]=="hsqldb-2.3.1" || sp[i]=="smallsql0.21_src" || sp[i]=="CloneTestProject" || sp[i]=="testproj"){
       spos = i;
       break;
     }
   }
   var res = "";
-  for(i=spos-1;i<sp.length;i++){
+  for(i=spos;i<sp.length;i++){
     res+=sp[i]+"/";
   }
 
