@@ -7,6 +7,7 @@ public alias LocPair = tuple[loc,loc];
 public alias LocPairs = set[LocPair];
 public alias LocClass = set[loc];
 public alias LocClasses = set[LocClass];
+public alias VisOutput = map[loc, map[loc, list[tuple[tuple[int, int], tuple[int, int]]]]];
 
 public LocClasses locPairsToLocClasses(LocPairs lps) {
 	LocClasses lcs = {};

@@ -11,9 +11,10 @@ import Set;
 import util::ShellExec;
 
 import SE::Type1::Detector;
+import SE::CloneDetection::Common;
 
 public void visualizeType1(M3 model){
-	map[loc, map[loc, list[tuple[tuple[int, int], tuple[int, int]]]]] rels = detectType1(model);
+	VisOutput rels = detectType1(model);
 	str genData = rascalToJson(rels);
 	str genDataMin = rascalToJsonMin(rels);
 	writeFile(|project://uva-se-series2/web/data/gendata.json|, genData);
@@ -22,7 +23,7 @@ public void visualizeType1(M3 model){
 }
 
 
-public str rascalToJsonMin(map[loc, map[loc, list[tuple[tuple[int, int], tuple[int, int]]]]] rels){
+public str rascalToJsonMin(VisOutput rels){
 	str res = "[";
 	
 	for(main <- rels){ //all main files
@@ -61,7 +62,7 @@ public str rascalToJsonMin(map[loc, map[loc, list[tuple[tuple[int, int], tuple[i
 	return res;
 }
 
-public str rascalToJson(map[loc, map[loc, list[tuple[tuple[int, int], tuple[int, int]]]]] rels){
+public str rascalToJson(VisOutput rels){
 	str res = "[";
 	
 	for(main <- rels){ //all main files
@@ -84,7 +85,7 @@ public str rascalToJson(map[loc, map[loc, list[tuple[tuple[int, int], tuple[int,
 	return res;
 }
 
-///
+///-----------------------------------------------------
 
 public void visualizeType1old(M3 model){
 	str genData = rascalToJsonold(detectType1old(model));
