@@ -11,6 +11,8 @@ import Node;
 import SE::Utils;
 import SE::CloneDetection::AstMetrics::Common;
 
+int defaultMinStatements = 6;
+
 public data NodeType
 	= declarationNode(str name)
 	| statementNode(str name)
@@ -20,12 +22,12 @@ public alias VectorTemplate = list[NodeType];
 public alias NodeCount = map[NodeType, int];
 public alias NodeCounts = rel[NodeCount,Segment];
 
-public Vectors generateVectors(list[node] ns, int minS=6) = generateVectors(ns, getVectorTemplate(ns), minS=minS);
-public Vectors generateVectors(list[node] ns, VectorTemplate template, int minS=6) {
+public Vectors generateVectors(list[node] ns, int minS=defaultMinStatements) = generateVectors(ns, getVectorTemplate(ns), minS=minS);
+public Vectors generateVectors(list[node] ns, VectorTemplate template, int minS=defaultMinStatements) {
 	return {v | n <- ns, v <- generateVectors(n, template,minS=minS)};
 }
-public Vectors generateVectors(node n, int minS=6) = generateVectors(n, getVectorTemplate(n), minS=minS);
-public Vectors generateVectors(node n, VectorTemplate template, int minS=6) {
+public Vectors generateVectors(node n, int minS=defaultMinStatements) = generateVectors(n, getVectorTemplate(n), minS=minS);
+public Vectors generateVectors(node n, VectorTemplate template, int minS=defaultMinStatements) {
 	<_,_,ncs> = generateNodeCountsRecursively(n,minS=minS);
 	return {<[nt in nc ? nc[nt] : 0 | nt <- template],ns> | <nc,ns> <- ncs};
 }
@@ -49,7 +51,7 @@ public set[NodeType] getNodeTypes(value v) {
 	return nodeTypes;
 }
 
-public tuple[int, NodeCount, NodeCounts] generateNodeCountsRecursively(value n, int minS=6) {
+public tuple[int, NodeCount, NodeCounts] generateNodeCountsRecursively(value n, int minS=defaultMinStatements) {
     c = 0;
     nc = ();
     NodeCounts ncs = {};
@@ -112,14 +114,14 @@ public NodeCount mergeNodeCounts(NodeCount nc1, NodeCount nc2) {
 	}
 	return nc1;
 }
-public set[list[&T]] getMinSeqs(list[&T] xs, bool (list[&T]) match) {
+public set[list[&T]] getMinSeqs(list[&T] xs, bool (list[&T]) matchFunc) {
 	rs = {};
 	l = size(xs);
 	for (i <- [0..l]) {
 		if (i < l-1) {
 			for (j <- [i+2..l+1]) {
 				ys = slice(xs, i, j - i);
-				if (match(ys)) {
+				if (matchFunc(ys)) {
 					rs += ys;
 					break;
 				}
@@ -128,7 +130,7 @@ public set[list[&T]] getMinSeqs(list[&T] xs, bool (list[&T]) match) {
 		if (i > 1) {
 			for (j <- [i-2..-1]) {
 				ys = slice(xs,j,i-j);
-				if (match(ys)) {
+				if (matchFunc(ys)) {
 					rs += ys;
 					break;
 				}
