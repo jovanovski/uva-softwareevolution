@@ -5,6 +5,7 @@ import Node;
 import Set;
 import List;
 import IO;
+import SE::CloneDetection::AstMetrics::AstNormalization;
 
 public bool isEditDistanceLessThan(list[node] ns1, list[node] ns2, int maxDistance) {
 	<res,_> = getEditDistanceWithMax(ns1, ns2, maxDistance);

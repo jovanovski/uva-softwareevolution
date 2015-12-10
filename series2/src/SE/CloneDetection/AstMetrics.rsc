@@ -15,8 +15,9 @@ import SE::CloneDetection::AstMetrics::VectorGrouping;
 import SE::CloneDetection::AstMetrics::PairGeneration;
 import SE::CloneDetection::AstMetrics::PairMerging;
 
-int defaultEditDistancePerNrOfTokens = 30;
 int defaultMinStatements = 6;
+int defaultEditDistancePerNrOfTokens = 15;
+real defaultPqGramDistance = 0.1;
 
 public LocClasses detectType1(M3 model, int minS=defaultMinStatements) {
 	asts = doGenerateAstsStep(model);
@@ -43,12 +44,12 @@ public LocClasses detectType2(list[node] asts, int minS=defaultMinStatements) {
 	return detectType1(vsm,minS=minS);
 }
 
-public LocClasses detectType3(M3 model, int minS=defaultMinStatements, int editDistancePerNrOfTokens=defaultEditDistancePerNrOfTokens) {
+public LocClasses detectType3(M3 model, int minS=defaultMinStatements, int editDistancePerNrOfTokens=defaultEditDistancePerNrOfTokens,real pqGramDistance=defaultPqGramDistance) {
 	asts = doGenerateAstsStep(model);
-	return detectType3(asts,minS=minS,editDistancePerNrOfTokens=editDistancePerNrOfTokens);
+	return detectType3(asts,minS=minS,editDistancePerNrOfTokens=editDistancePerNrOfTokens,pqGramDistance=pqGramDistance);
 }
 
-public LocClasses detectType3(list[node] asts, int minS=defaultMinStatements, int editDistancePerNrOfTokens=defaultEditDistancePerNrOfTokens) {
+public LocClasses detectType3(list[node] asts, int minS=defaultMinStatements, int editDistancePerNrOfTokens=defaultEditDistancePerNrOfTokens,real pqGramDistance=defaultPqGramDistance) {
 	asts = doAstAnonymizationStep(asts);
 	vsm = doGenerateVectorsStep(asts,minS);
 	print("Grouping vectors by hamming distance per nr of tokens... ");
@@ -58,7 +59,7 @@ public LocClasses detectType3(list[node] asts, int minS=defaultMinStatements, in
 	sgs = getSegmentsForVectorGroups(vsm, vgs);
 	println("done.");
 	ps = doGeneratePairsStepWithFunc(sgs, SegmentPairs (SegmentGroups) {
-		return generateClonePairsBySimilarity(sgs, editDistancePerNrOfTokens);
+		return generateClonePairsBySimilarity(sgs, editDistancePerNrOfTokens, pqGramDistance);
 	});
 	lcs = doPostProcessingSteps(ps);
 	return lcs;

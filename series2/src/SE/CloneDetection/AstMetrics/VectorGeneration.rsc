@@ -63,7 +63,7 @@ public tuple[int, NodeCount, NodeCounts] generateNodeCountsRecursively(value n, 
 				nc = mergeNodeCounts(nc,xnc);
 				ncs += xncs;
 			}	
-			for(ys <- getMinSeqs(xrs, bool (lrel[tuple[int,NodeCount,NodeCounts],node] zs) {
+			for(ys <- getMinSeqs(xrs, bool (lrel[tuple[int,NodeCount,NodeCounts],Statement] zs) {
 				return (0 | it + zc | <<zc,_,_>,_> <- zs) >= minS;
 			})) {
 				<<mc,mnc,mncs>,mn> = head(ys);
@@ -99,7 +99,7 @@ public tuple[int, NodeCount, NodeCounts] generateNodeCountsRecursively(value n, 
 					nc = addNodeType(nc, statementNode(getName(s)));
 					c += 1;
 					if (c >= minS) {
-						ncs += {<nc, <n@src, [n]>>};
+						ncs += {<nc, <n@src, [s]>>};
 					}
 				}
 				case Expression e: nc = addNodeType(nc, expressionNode(getName(e)));

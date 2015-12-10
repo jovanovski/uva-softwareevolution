@@ -12,16 +12,37 @@ import Type;
 import util::Math;
 import SE::CloneDetection::AstMetrics::Common;
 import SE::CloneDetection::AstMetrics::SegmentRelation;
+import SE::CloneDetection::AstMetrics::AstNormalization;
 import SE::CloneDetection::AstMetrics::AstEditDistance;
+import SE::CloneDetection::AstMetrics::AstPqGram;
 
 public SegmentPairs generateClonePairsByEquivalence(SegmentGroups segmentGroups) = generateClonePairsWithMatchFunc(segmentGroups, bool (NodeList s1, NodeList s2) {
 	return s1 == s2;
 });
 
-public SegmentPairs generateClonePairsBySimilarity(SegmentGroups segmentGroups, int editDistancePerNrOfTokens) = generateClonePairsWithMatchFunc(segmentGroups, bool (NodeList s1, NodeList s2) {
-	int maxDistance = floor(max(countRelevantNodes(s1), countRelevantNodes(s2)) / editDistancePerNrOfTokens);
-	return isEditDistanceLessThan(s1[1],s2[1],maxDistance);
-});
+public SegmentPairs generateClonePairsBySimilarity(SegmentGroups segmentGroups, int editDistancePerNrOfTokens, real pqGramDistance) = {
+	//int maxDistance = floor(max(countRelevantNodes(s1), countRelevantNodes(s2)) / editDistancePerNrOfTokens);
+	//return isEditDistanceLessThan(s1[1],s2[1],maxDistance);
+	
+	rel[Segment,Segment] pairs = {};
+	for (group <- segmentGroups) {
+		groupWithNormalizedAst = {<<l,ns>,normalizeAst(\block(ns))> | <l,ns> <- group};		
+		while (!isEmpty(groupWithNormalizedAst)) {
+			<swnast,groupWithNormalizedAst> = takeOneFrom(groupWithNormalizedAst);			
+			queue = {swnast};
+			while (!isEmpty(queue)) {
+				<<s1,nast1>,queue> = takeOneFrom(queue);
+				<l1,ns1> = s1;
+				matches = {swnast2 | swnast2:<s2,nast2> <- groupWithNormalizedAst, getSegmentRelation(s1,s2) == disjoint(), pqDistance(nast1,nast2) < pqGramDistance};
+				queue += matches;
+				groupWithNormalizedAst -= matches;
+				// we generate the pairs with a specific order to ensure that they can be easily merged
+				pairs += {l1.uri < l2.uri || (l1.uri == l2.uri && l1.offset <= l2.offset) ? <s1,s2> : <s2,s1> | <s2:<l2,_>,_> <- matches};
+			}
+		}
+	}
+	return pairs;
+};
 
 public SegmentPairs generateClonePairsWithMatchFunc(SegmentGroups segmentGroups, bool(NodeList,NodeList) matchFunc) {
 	rel[Segment,Segment] pairs = {};

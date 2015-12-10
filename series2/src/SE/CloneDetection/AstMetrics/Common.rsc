@@ -1,6 +1,10 @@
 module SE::CloneDetection::AstMetrics::Common
 
-public alias NodeList = list[node];
+import lang::java::jdt::m3::Core;
+import lang::java::m3::Core;
+import lang::java::m3::AST;
+
+public alias NodeList = list[Statement];
 public alias Segment = tuple[loc,NodeList];
 public alias Vector = list[int];
 public alias Vectors = rel[Vector,Segment];
