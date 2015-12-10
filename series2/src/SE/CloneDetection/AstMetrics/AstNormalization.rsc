@@ -13,13 +13,16 @@ public alias NodeIdentity = tuple[Symbol, str, list[value]];
 data NormalizedAst 
 	= normalizedNode(NodeIdentity id, list[NormalizedAst] children);
 
-public NormalizedAst normalizeAst(Declaration d) = normalizeAstNode(d);
-public NormalizedAst normalizeAst(Statement s) = normalizeAstNode(s);
-public NormalizedAst normalizeAst(Expression e) = normalizeAstNode(e);
+public tuple[NormalizedAst,map[node,NormalizedAst]] normalizeAst(Declaration d, map[node,NormalizedAst] mem) = normalizeAstNode(d,mem);
+public tuple[NormalizedAst,map[node,NormalizedAst]] normalizeAst(Statement s, map[node,NormalizedAst] mem) = normalizeAstNode(s,mem);
+public tuple[NormalizedAst,map[node,NormalizedAst]] normalizeAst(Expression e, map[node,NormalizedAst] mem) = normalizeAstNode(e,mem);
 
-private NormalizedAst normalizeAstNode(node n) {
+private tuple[NormalizedAst,map[node,NormalizedAst]] normalizeAstNode(node n, map[node,NormalizedAst] mem) {
 	list[value] props = [];
 	list[node] children = [];
+	if (n in mem) {
+		return <mem[n],mem>;
+	}
 	for (c <- getChildren(n)) {
 		switch (c) {
 			case Declaration d: children += d;
@@ -31,5 +34,12 @@ private NormalizedAst normalizeAstNode(node n) {
 			case value v: props += v;
 		}
 	}
-	return normalizedNode(<typeOf(n),getName(n),props>,[normalizeAstNode(c) | c <- children]);
+	normalizedChildren = [];
+	for (c <- children) {
+		<cn,mem> = normalizeAstNode(c,mem);
+		normalizedChildren += cn;
+	}
+	nn = normalizedNode(<typeOf(n),getName(n),props>,normalizedChildren);
+	mem[n] = nn;
+	return <nn,mem>;
 }

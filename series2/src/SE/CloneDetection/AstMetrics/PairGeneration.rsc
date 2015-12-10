@@ -24,9 +24,15 @@ public SegmentPairs generateClonePairsBySimilarity(SegmentGroups segmentGroups, 
 	//int maxDistance = floor(max(countRelevantNodes(s1), countRelevantNodes(s2)) / editDistancePerNrOfTokens);
 	//return isEditDistanceLessThan(s1[1],s2[1],maxDistance);
 	
+	map[node,NormalizedAst] mem = ();
 	rel[Segment,Segment] pairs = {};
 	for (group <- segmentGroups) {
-		groupWithNormalizedAst = {<<l,ns>,normalizeAst(\block(ns))> | <l,ns> <- group};		
+		// this normalization step is ugly and should be refactored
+		groupWithNormalizedAst = {};
+		for (<l,ns> <- group) {
+			<nn,mem> = normalizeAst(\block(ns),mem);
+			groupWithNormalizedAst += {<<l,ns>,nn>};
+		}
 		while (!isEmpty(groupWithNormalizedAst)) {
 			<swnast,groupWithNormalizedAst> = takeOneFrom(groupWithNormalizedAst);			
 			queue = {swnast};
