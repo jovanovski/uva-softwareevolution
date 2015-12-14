@@ -8,21 +8,28 @@ import Node;
 import Set;
 import List;
 import IO;
+import SE::CloneDetection::AstMetrics::Common;
 
-public alias NodeIdentity = tuple[Symbol, str, list[value]]; 
-data NormalizedAst 
+public alias NodeIdentity = tuple[Symbol, str, int, list[value]]; 	// type, name, arity & children that are not declarations, statements or expressions
+public data NormalizedAst 
 	= normalizedNode(NodeIdentity id, list[NormalizedAst] children);
 
-public tuple[NormalizedAst,map[node,NormalizedAst]] normalizeAst(Declaration d, map[node,NormalizedAst] mem) = normalizeAstNode(d,mem);
-public tuple[NormalizedAst,map[node,NormalizedAst]] normalizeAst(Statement s, map[node,NormalizedAst] mem) = normalizeAstNode(s,mem);
-public tuple[NormalizedAst,map[node,NormalizedAst]] normalizeAst(Expression e, map[node,NormalizedAst] mem) = normalizeAstNode(e,mem);
+public map[NodeList,NormalizedAst] generateNormalizedAsts(set[NodeList] nls) {
+	map[NodeList,NormalizedAst] res = ();
+	map[node,NormalizedAst] mem = ();
+	for (nl <- nls) {
+		<nmast,mem> = normalizeAstNode(\block(nl),mem);
+		res[nl] = nmast; 
+	}
+	return res;
+}
 
-private tuple[NormalizedAst,map[node,NormalizedAst]] normalizeAstNode(node n, map[node,NormalizedAst] mem) {
-	list[value] props = [];
-	list[node] children = [];
+public tuple[NormalizedAst,map[node,NormalizedAst]] normalizeAstNode(node n, map[node,NormalizedAst] mem) {
 	if (n in mem) {
 		return <mem[n],mem>;
 	}
+	list[value] props = [];
+	list[node] children = [];
 	for (c <- getChildren(n)) {
 		switch (c) {
 			case Declaration d: children += d;
@@ -39,7 +46,7 @@ private tuple[NormalizedAst,map[node,NormalizedAst]] normalizeAstNode(node n, ma
 		<cn,mem> = normalizeAstNode(c,mem);
 		normalizedChildren += cn;
 	}
-	nn = normalizedNode(<typeOf(n),getName(n),props>,normalizedChildren);
+	nn = normalizedNode(<typeOf(n),getName(n),arity(n),props>,normalizedChildren);
 	mem[n] = nn;
 	return <nn,mem>;
 }

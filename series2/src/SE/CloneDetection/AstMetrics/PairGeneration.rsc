@@ -14,7 +14,32 @@ import SE::CloneDetection::AstMetrics::Common;
 import SE::CloneDetection::AstMetrics::SegmentRelation;
 import SE::CloneDetection::AstMetrics::AstNormalization;
 import SE::CloneDetection::AstMetrics::AstEditDistance;
-import SE::CloneDetection::AstMetrics::AstPqGram;
+import SE::CloneDetection::AstMetrics::AstPqGramDistance;
+
+public SegmentPairs generateClonePairs(SegmentGroups segmentGroups) {
+	SegmentPairs pairs = {};
+	for (group <- segmentGroups, s1:<l1,_> <- group, s2:<l2,_> <- group, getSegmentRelation(s1,s2) == disjoint()) {
+		if (l1.uri < l2.uri || l1.uri == l2.uri && l1.offset <= l2.offset) {
+			pairs += <s1,s2>;
+		}
+	}
+	return pairs;
+
+	//return {, };
+	
+	//SegmentPairs pairs = {};
+	//for () {
+	//	
+	//	while (!isEmpty(group)) {
+	//		<s1,group> = takeOneFrom(group);
+	//		<l1,ns1> = s1;
+	//		s1Pairs = {l1.uri < l2.uri || l1.uri == l2.uri && l1.offset <= l2.offset ? <s1,s2> : <s2,s1> | s2 <- group, getSegmentRelation(s1,s2) == disjoint()};
+	//		
+	//	}
+	//}
+	//return pairs;
+}
+
 
 public SegmentPairs generateClonePairsByEquivalence(SegmentGroups segmentGroups) = generateClonePairsWithMatchFunc(segmentGroups, bool (NodeList s1, NodeList s2) {
 	return s1 == s2;

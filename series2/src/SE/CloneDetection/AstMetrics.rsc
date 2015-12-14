@@ -9,14 +9,15 @@ import Map;
 import IO;
 import SE::CloneDetection::Common;
 import SE::CloneDetection::AstMetrics::Common;
+import SE::CloneDetection::AstMetrics::AstGeneration;
 import SE::CloneDetection::AstMetrics::AstAnonymization;
-import SE::CloneDetection::AstMetrics::VectorGeneration;
-import SE::CloneDetection::AstMetrics::VectorGrouping;
+import SE::CloneDetection::AstMetrics::UnitGeneration;
+import SE::CloneDetection::AstMetrics::AstNormalization;
+import SE::CloneDetection::AstMetrics::AstPqGram;
 import SE::CloneDetection::AstMetrics::PairGeneration;
 import SE::CloneDetection::AstMetrics::PairMerging;
 
 int defaultMinStatements = 6;
-int defaultEditDistancePerNrOfTokens = 15;
 real defaultPqGramDistance = 0.1;
 
 public LocClasses detectType1(M3 model, int minS=defaultMinStatements) {
@@ -24,12 +25,12 @@ public LocClasses detectType1(M3 model, int minS=defaultMinStatements) {
 	return detectType1(asts,minS=minS);
 }
 public LocClasses detectType1(list[node] asts, int minS=defaultMinStatements) {
-	vsm = doGenerateVectorsStep(asts,minS);
-	return detectType1(vsm,minS=minS);
+	us = doGenerateUnitsStep(asts,minS);
+	return detectType1(us);
 }
-public LocClasses detectType1(VectorSegmentsMap vsm) {
-	sgs = vectorSegmentsMapToSegmentGroups(vsm);
-	ps = doGeneratePairsStepWithFunc(sgs, generateClonePairsByEquivalence);
+public LocClasses detectType1(set[Segment] us) {
+	nls = doIndexByNodeListStep(us);
+	ps = doGeneratePairsStep(range(nls));
 	lcs = doPostProcessingSteps(ps);
 	return lcs;
 }
@@ -40,27 +41,41 @@ public LocClasses detectType2(M3 model, int minS=defaultMinStatements) {
 }
 public LocClasses detectType2(list[node] asts, int minS=defaultMinStatements) {
 	asts = doAstAnonymizationStep(asts);
-	vsm = doGenerateVectorsStep(asts,minS);
-	return detectType1(vsm,minS=minS);
+	return detectType1(asts);
 }
 
-public LocClasses detectType3(M3 model, int minS=defaultMinStatements, int editDistancePerNrOfTokens=defaultEditDistancePerNrOfTokens,real pqGramDistance=defaultPqGramDistance) {
+public LocClasses detectType3(M3 model, int minS=defaultMinStatements, real pqGramDistance=defaultPqGramDistance) {
 	asts = doGenerateAstsStep(model);
-	return detectType3(asts,minS=minS,editDistancePerNrOfTokens=editDistancePerNrOfTokens,pqGramDistance=pqGramDistance);
+	return detectType3(asts,minS=minS,pqGramDistance=pqGramDistance);
 }
-
-public LocClasses detectType3(list[node] asts, int minS=defaultMinStatements, int editDistancePerNrOfTokens=defaultEditDistancePerNrOfTokens,real pqGramDistance=defaultPqGramDistance) {
+public LocClasses detectType3(list[node] asts, int minS=defaultMinStatements, real pqGramDistance=defaultPqGramDistance) {
 	asts = doAstAnonymizationStep(asts);
-	vsm = doGenerateVectorsStep(asts,minS);
-	print("Grouping vectors by hamming distance per nr of tokens... ");
-	vgs = groupVectorsBySimilarity(domain(vsm), editDistancePerNrOfTokens);
-	println("<size(vgs)> vector groups.");
-	print("Translating vector groups to segment groups...");
-	sgs = getSegmentsForVectorGroups(vsm, vgs);
+	us = doGenerateUnitsStep(asts,minS);
+	nls = doIndexByNodeListStep(us);
+	
+	print("Generating normalized asts... ");
+	nmasts = generateNormalizedAsts(domain(nls));
+	println("<size(range(nmasts))> unique normalized ast(s).");
+	
+	print("Generating pq grams... ");
+	gs = generatePqGrams(range(nmasts)); 
+	println("<size(range(gs))> unique pq gram(s).");
+	
+	print("Pairing same size pq grams with pq distance \<= <pqGramDistance>... ");
+	gps = generatePqGramPairs(range(gs),pqGramDistance);
 	println("done.");
-	ps = doGeneratePairsStepWithFunc(sgs, SegmentPairs (SegmentGroups) {
-		return generateClonePairsBySimilarity(sgs, editDistancePerNrOfTokens, pqGramDistance);
-	});
+	
+	println({size(g) | g <- gps});
+	
+	print("Generating unit groups from pq pairs... ");
+	ugs = generateUnitGroupsFromPqPairs(gps, gs, nmasts, nls);
+	println("<size(ugs)> new unit groups.");
+	
+	iprintln({ l | g <- ugs, <l,_> <- g});
+	
+	ps = doGeneratePairsStep(ugs + range(nls));
+	//iprintln({<l1,l2> | <<l1,_>,<l2,_>> <- ps});
+	
 	lcs = doPostProcessingSteps(ps);
 	return lcs;
 }
@@ -68,7 +83,7 @@ public LocClasses detectType3(list[node] asts, int minS=defaultMinStatements, in
 // common steps
 private list[node] doGenerateAstsStep(M3 model) {
 	print("Generating asts... ");
-	asts = [getMethodASTEclipse(meth, model=model)| meth <- methods(model)];
+	asts = generateAsts(model);
 	println("<size(asts)> ast(s) generated.");
 	return asts;
 }
@@ -80,16 +95,23 @@ private list[node] doAstAnonymizationStep(list[node] asts) {
 	return asts;
 }
 
-private VectorSegmentsMap doGenerateVectorsStep(list[node] asts, int minS) {
-	print("Generating vectors... ");
-	vs = generateVectors(asts,minS=minS);
-	println("<size(vs)> vector(s) generated.");
-	return vectorsToMap(vs);
+private set[Segment] doGenerateUnitsStep(list[node] asts, int minS) {
+	print("Generating units... ");
+	us = generateUnits(asts,minS=minS);
+	println("<size(us)> unit(s) generated.");
+	return us;
 }
 
-private SegmentPairs doGeneratePairsStepWithFunc(SegmentGroups sgs, SegmentPairs (SegmentGroups) pairGenerationFunc) {
+private map[NodeList,set[Segment]] doIndexByNodeListStep(set[Segment] us) {
+	print("Indexing units by node list... ");
+	ugs = indexSegmentsByNodeList(us);
+	println("<size(ugs)> node list(s).");
+	return ugs;
+}
+
+private SegmentPairs doGeneratePairsStep(SegmentGroups sgs) {
 	print("Generating clone pairs... ");
-	ps = pairGenerationFunc(sgs);
+	ps = generateClonePairs(sgs);
 	println("<size(ps)> pair(s) generated.");
 	return ps;
 }
