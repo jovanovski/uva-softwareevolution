@@ -69,10 +69,7 @@ public LocClasses detectType3(list[node] asts, int minS=defaultMinStatements, re
 	ugs = generateUnitGroupsFromPqPairs(gps, gs, nmasts, nls);
 	println("<size(ugs)> new unit groups.");
 	
-	//iprintln({ l | g <- ugs, <l,_> <- g});
-	
 	ps = doGeneratePairsStep(ugs + range(nls));
-	//iprintln({<l1,l2> | <<l1,_>,<l2,_>> <- ps});
 	
 	lcs = doPostProcessingSteps(ps);
 	return lcs;

@@ -36,21 +36,6 @@ public rel[PqGram,PqGram] generatePqGramPairs(set[PqGram] gs, real maxPqDistance
 		pairs += {<g1,g2> | g1 <- gsBySize[s], g2 <- gsBySize[s], g1 != g2 && pqDistance(g1,g2) <= maxPqDistance};
 	}
 	return pairs;
-	
-	//for (s <- gsBySize) {
-	//	gsGroup = gsBySize[s];
-	//	<g,gsGroup> = takeOneFrom(gsGroup);
-	//	//pGroup = {g};
-	//	queue = {g};
-	//	while (!isEmpty(queue)) {
-	//		<g1,queue> = takeOneFrom(queue);
-	//		matches = {g2 | g2 <- gsGroup, pqDistance(g1,g2) <= maxPqDistance};
-	//		gsGroup -= matches;
-	//		queue += matches;
-	//		pairs += {<g1,g2> | g2 <- matches};
-	//	}
-	//}
-	//return pairs;
 }
 
 public set[set[Segment]] generateUnitGroupsFromPqPairs(rel[PqGram,PqGram] gps, map[NormalizedAst,PqGram] gs, map[NodeList,NormalizedAst] nmasts, map[NodeList,set[Segment]] nls) {
