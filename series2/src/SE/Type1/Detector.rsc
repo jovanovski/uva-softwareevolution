@@ -17,6 +17,10 @@ import SE::CloneDetection::Common;
 
 public map[loc, int] locSize = ();
 
+public int countVis(VisOutput out){
+	return size(out);
+}
+
 public VisOutput detectType1G(M3 model){
 	datetime startTime = now();
 	println("<now()> - Type1 detection started");

@@ -18,6 +18,7 @@ public rel[loc,loc] detectType2(M3 model) {
 	vs = computeVectors(model);
 	return detectType2(vs);
 }
+
 public rel[loc,loc] detectType2(Vectors vs) {
 	println("Grouping vectors based on equality...");
 	gvs = groupVectorsByEquality(vs);
