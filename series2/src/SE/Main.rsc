@@ -5,7 +5,7 @@ import lang::java::m3::Core;
 import lang::java::m3::AST;
 import List;
 //import SE::CloneDetection::AstMetrics;
-import SE::CloneDetection::Type23::VectorGeneration;
+//import SE::CloneDetection::Type23::VectorGeneration;
 import SE::Type1::Visualization;
 
 public void detectType1(M3 model) {
