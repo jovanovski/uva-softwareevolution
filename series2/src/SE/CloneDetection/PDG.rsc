@@ -22,6 +22,7 @@ alias NodeIdentity = tuple[Symbol \type, str name, list[value] props];
 public LocClasses detectType4(M3 model, int minS=defaultMinStatements) {
 	print("Generating asts... ");
 	asts = (mloc: getMethodASTEclipse(mloc, model=model) | mloc <- methods(model));
+	asts = (asts[mloc]@src: asts[mloc] | mloc <- asts);
 	println("<size(asts)> ast(s) generated.");
 	print("Generating pdgs... ");	
 	map[tuple[rel[node,node],rel[node,node]],set[loc]] invertMap = ();
@@ -44,23 +45,23 @@ public LocClasses detectType4(M3 model, int minS=defaultMinStatements) {
 	}
 	return {invertMap[mergedPdg] | mergedPdg <- invertMap, size(invertMap[mergedPdg]) > 1};
 	
-	pdgs = (ast@src: generatePdg(mast,model)| ast <- asts);
-
-
-	int i = 0;
-	map[loc,value] res = ();
-	for (mloc <- methods(model)) { 
-		
-		println(i);
-		i += 1;
-		mast = getMethodASTEclipse(mloc,model=model);
-		if (countStatements(mast) > minS) {
-			mpdgs = createProgramDependences(mloc, mast, model, Intra());
-			//DataDependence dataDependence = createDDG(generatedData.methodData, generatedData.controlFlow);
-			//res[mloc] = dataDependence;
-		}
-	} 
-	return res;
+	//pdgs = (ast@src: generatePdg(mast,model)| ast <- asts);
+//
+//
+	//int i = 0;
+	//map[loc,value] res = ();
+	//for (mloc <- methods(model)) { 
+	//	
+	//	println(i);
+	//	i += 1;
+	//	mast = getMethodASTEclipse(mloc,model=model);
+	//	if (countStatements(mast) > minS) {
+	//		mpdgs = createProgramDependences(mloc, mast, model, Intra());
+	//		//DataDependence dataDependence = createDDG(generatedData.methodData, generatedData.controlFlow);
+	//		//res[mloc] = dataDependence;
+	//	}
+	//} 
+	//return res;
 }
 
 private ProgramDependences generatePdgs(mloc, node ast, M3 model) {

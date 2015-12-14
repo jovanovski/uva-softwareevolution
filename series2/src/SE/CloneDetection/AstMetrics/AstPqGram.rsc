@@ -31,7 +31,12 @@ public rel[PqGram,PqGram] generatePqGramPairs(set[PqGram] gs, real maxPqDistance
 	}
 
 	rel[PqGram,PqGram] pairs = {};
-	return {<g1,g2> | s <- gsBySize, g1 <- gsBySize[s], g2 <- gsBySize[s], g1 != g2 && pqDistance(g1,g2) <= maxPqDistance};
+	for (s <- gsBySize) {
+		println(s);
+		pairs += {<g1,g2> | g1 <- gsBySize[s], g2 <- gsBySize[s], g1 != g2 && pqDistance(g1,g2) <= maxPqDistance};
+	}
+	return pairs;
+	
 	//for (s <- gsBySize) {
 	//	gsGroup = gsBySize[s];
 	//	<g,gsGroup> = takeOneFrom(gsGroup);
