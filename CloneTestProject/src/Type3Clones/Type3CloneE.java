@@ -4,10 +4,8 @@ public abstract class Type3CloneE {
 	public void sumProd(int n) {
 		float sum = 0; // C1
 		float prod = 1;
-		for (int i = 0; i < n; i++) {
-			if (i % 2 == 0) {
-				sum += i;
-			}
+		for (int i = 0; i <= n; i++) {
+			sum = sum + i;
 			prod = prod * i;
 			foo(sum,prod);
 		}

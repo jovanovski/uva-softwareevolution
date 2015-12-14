@@ -6,7 +6,7 @@ public abstract class Type3CloneD {
 		float prod = 1;
 		for (int i = 0; i < n; i++) {
 			sum = sum + i;
-			// line deleted
+			prod = prod / i;
 			foo(sum,prod);
 		}
 	}

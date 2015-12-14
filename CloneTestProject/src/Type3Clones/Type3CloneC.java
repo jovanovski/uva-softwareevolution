@@ -5,11 +5,9 @@ public abstract class Type3CloneC {
 		float sum = 0; // C1
 		float prod = 1;
 		for (int i = 0; i < n; i++) {
-			sum = sum + i;
+			sum = sum - i;
 			prod = prod * i;
-			if (n % 2 == 0) {
-				foo(sum, prod);
-			}
+			foo(sum,prod);
 		}
 	}
 }
