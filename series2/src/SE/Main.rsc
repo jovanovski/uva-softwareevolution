@@ -6,9 +6,11 @@ import lang::java::m3::AST;
 import List;
 //import SE::CloneDetection::AstMetrics;
 import SE::CloneDetection::Type23::VectorGeneration;
+import SE::Type1::Visualization;
 
 public void detectType1(M3 model) {
-	iprintln("TODO");
+	println("Detecting Type 1 started...");
+	visualizeType1(model);
 }
 
 public rel[loc,loc] detectType2(M3 model) {
