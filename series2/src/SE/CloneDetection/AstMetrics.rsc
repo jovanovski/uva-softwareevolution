@@ -18,7 +18,7 @@ import SE::CloneDetection::AstMetrics::PairGeneration;
 import SE::CloneDetection::AstMetrics::PairMerging;
 
 int defaultMinStatements = 6;
-real defaultPqGramDistance = 0.1;
+real defaultPqGramDistance = 0.05;
 
 public LocClasses detectType1(M3 model, int minS=defaultMinStatements) {
 	asts = doGenerateAstsStep(model);
@@ -63,15 +63,13 @@ public LocClasses detectType3(list[node] asts, int minS=defaultMinStatements, re
 	
 	print("Pairing same size pq grams with pq distance \<= <pqGramDistance>... ");
 	gps = generatePqGramPairs(range(gs),pqGramDistance);
-	println("done.");
-	
-	println({size(g) | g <- gps});
+	println("<size(gps)> pairs.");
 	
 	print("Generating unit groups from pq pairs... ");
 	ugs = generateUnitGroupsFromPqPairs(gps, gs, nmasts, nls);
 	println("<size(ugs)> new unit groups.");
 	
-	iprintln({ l | g <- ugs, <l,_> <- g});
+	//iprintln({ l | g <- ugs, <l,_> <- g});
 	
 	ps = doGeneratePairsStep(ugs + range(nls));
 	//iprintln({<l1,l2> | <<l1,_>,<l2,_>> <- ps});

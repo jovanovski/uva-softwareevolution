@@ -13,16 +13,24 @@ import util::Math;
 import SE::CloneDetection::AstMetrics::Common;
 import SE::CloneDetection::AstMetrics::SegmentRelation;
 import SE::CloneDetection::AstMetrics::AstNormalization;
-import SE::CloneDetection::AstMetrics::AstEditDistance;
-import SE::CloneDetection::AstMetrics::AstPqGramDistance;
 
-public SegmentPairs generateClonePairs(SegmentGroups segmentGroups) {
+public SegmentPairs generateClonePairs(SegmentGroups segmentGroups) {	
+	return { l1.uri < l2.uri || l1.uri == l2.uri && l1.offset <= l2.offset ? <s1,s2> : <s2,s1> | group <- segmentGroups, s1:<l1,_> <- group, s2:<l2,_> <- group, getSegmentRelation(s1,s2) == disjoint() };
+
 	SegmentPairs pairs = {};
-	for (group <- segmentGroups, s1:<l1,_> <- group, s2:<l2,_> <- group, getSegmentRelation(s1,s2) == disjoint()) {
-		if (l1.uri < l2.uri || l1.uri == l2.uri && l1.offset <= l2.offset) {
-			pairs += <s1,s2>;
+	for (group <- segmentGroups) {
+		sortedGroup = sort(group, bool (Segment s1, Segment s2) {
+			<l1,_> = s1;
+			<l2,_> = s2;
+			return l1.uri < l2.uri || l1.uri == l2.uri && l1.offset < l2.offset;
+		});
+		for (s1:<l1,_> <- sortedGroup, s2:<l2,_> <- sortedGroup, getSegmentRelation(s1,s2) == disjoint()) {
+			if (l1.uri < l2.uri || l1.uri == l2.uri && l1.offset <= l2.offset) {
+				pairs += <s1,s2>;
+			}
 		}
 	}
+	
 	return pairs;
 
 	//return {, };
